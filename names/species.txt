@@ -1,0 +1,631 @@
+# Names only for certain species, using the game's own species ids
+# (MR_MIME, NIDORAN_M, FARFETCHD). Underscores don't matter: MR__MIME matches too.
+# A header can list a whole evolution line.
+# One name per line, up to 10 letters. Letters only, with an inner hyphen allowed (Mary-Jo).
+
+[species PIKACHU RAICHU]
+Bolt
+Chu
+Pika
+Sparky
+Zappy
+
+[species NINETALES]
+Kitsune
+Kumiho
+Kuzunoha
+Kyubi
+Tamamo
+
+[species VULPIX]
+Foxy
+Kit
+Kitsune
+Russet
+
+[species GROWLITHE ARCANINE]
+Bruno
+Duke
+Fido
+Rover
+Shiba
+
+[species CHARMANDER CHARMELEON CHARIZARD]
+Drake
+Ember
+Ignis
+Salamander
+
+[species SQUIRTLE WARTORTLE BLASTOISE]
+Myrtle
+Sheldon
+Shelldon
+Shelly
+Tank
+Tortuga
+
+[species BULBASAUR IVYSAUR VENUSAUR]
+Bulby
+Seedling
+Sprout
+Spud
+
+[species MEOWTH PERSIAN]
+Kitty
+Mittens
+Whiskers
+
+[species ABRA KADABRA ALAKAZAM]
+Presto
+
+[species MACHOP MACHOKE MACHAMP]
+Brawn
+Hercules
+Samson
+
+[species GASTLY HAUNTER GENGAR]
+Boo
+Boogeyman
+Grin
+Shade
+Spook
+
+[species ONIX]
+Boulder
+Gravel
+Quarry
+Rocky
+
+[species SNORLAX]
+Couch
+Dozer
+Lazybones
+Napper
+Sleepy
+Snooze
+
+[species JIGGLYPUFF WIGGLYTUFF]
+Balloon
+Lullaby
+Melody
+Puff
+Songbird
+
+[species CLEFAIRY CLEFABLE]
+Comet
+Moonbeam
+Pixie
+
+[species PSYDUCK GOLDUCK]
+Daffy
+Dizzy
+Ducky
+Migraine
+Puddles
+
+[species SLOWPOKE SLOWBRO]
+Dopey
+Drowsy
+Lazy
+Mellow
+Sluggo
+
+[species MAGIKARP]
+Flop
+Goldie
+Koi
+Splashy
+
+[species GYARADOS]
+Fury
+Kraken
+Leviathan
+Ryujin
+Tempest
+
+[species LAPRAS]
+Ferry
+Lady
+Nessie
+Selkie
+Serenade
+
+[species DITTO]
+Blob
+Copycat
+Goo
+Mimic
+Morph
+
+[species EEVEE]
+Bun
+Eve
+Evie
+Fluffy
+Twig
+
+[species VAPOREON]
+Aqua
+Lagoon
+Ripple
+
+[species JOLTEON]
+Jolt
+Spike
+Ziggy
+Zippy
+
+[species FLAREON]
+Cinder
+Ember
+Fluffles
+Toasty
+
+[species PORYGON]
+Byte
+Glitch
+Pixel
+Vector
+
+[species KANGASKHAN]
+Joey
+Mama
+Roo
+
+[species CHANSEY]
+Eggbert
+Lucky
+Nurse
+
+[species CUBONE MAROWAK]
+Bones
+Marrow
+Ossie
+Skull
+
+[species PIDGEY PIDGEOTTO PIDGEOT]
+Coo
+Dove
+Pidge
+Pigeon
+Squab
+
+[species SPEAROW FEAROW]
+Beaky
+Pecker
+Spike
+Talon
+
+[species RATTATA RATICATE]
+Nibbles
+Ratty
+Squeak
+
+[species ZUBAT GOLBAT]
+Batty
+Fang
+Nosferatu
+Vlad
+
+[species GEODUDE GRAVELER GOLEM]
+Cobble
+Pebbles
+Rocky
+
+[species PONYTA RAPIDASH]
+Blaze
+Comet
+Mustang
+Pony
+
+[species DODUO DODRIO]
+Dodo
+Trio
+Twins
+
+[species SEEL DEWGONG]
+Blubber
+Flipper
+Seelie
+Selkie
+
+[species SHELLDER CLOYSTER]
+Clam
+Oyster
+Shelly
+
+[species KRABBY KINGLER]
+Clawdia
+Crabby
+Pinchy
+Snappy
+
+[species VOLTORB ELECTRODE]
+Bang
+Boom
+Kaboom
+
+[species EXEGGCUTE EXEGGUTOR]
+Coco
+Coconut
+Omelet
+Palmer
+Yolk
+
+[species HITMONLEE]
+Kicky
+
+[species HITMONCHAN]
+Jab
+Rocky
+
+[species LICKITUNG]
+Lappy
+Licky
+Slurp
+Smooch
+
+[species KOFFING WEEZING]
+Fumes
+Puffy
+Smog
+Stinky
+
+[species TANGELA]
+Mop
+Noodle
+Tangles
+Yarn
+
+[species HORSEA SEADRA]
+Coral
+Hippo
+Seahorse
+Sprite
+
+[species GOLDEEN SEAKING]
+Bubbles
+Duchess
+Goldie
+Koi
+
+[species STARYU STARMIE]
+Astra
+Nova
+Star
+Twinkle
+
+[species MR_MIME]
+Bip
+Mimsy
+Pierrot
+
+[species SCYTHER]
+Mantis
+Ninja
+Reaper
+Scythe
+Slash
+
+[species JYNX]
+Diva
+Frosty
+Matryoshka
+
+[species ELECTABUZZ]
+Amper
+Buzz
+Sparks
+Volty
+
+[species MAGMAR]
+Ember
+Lava
+Magma
+Torch
+
+[species PINSIR]
+Clamp
+Pinchy
+Tongs
+Vise
+
+[species TAUROS]
+Bully
+Rodeo
+Taurus
+Toro
+
+[species OMANYTE OMASTAR]
+Ammon
+Nautilus
+Shelby
+Spiral
+
+[species KABUTO KABUTOPS]
+Fossil
+Helmet
+Kabby
+Trilo
+
+[species AERODACTYL]
+Ancient
+Fossil
+Jurassic
+Ptera
+
+[species ARTICUNO]
+Boreas
+Frost
+Glacia
+
+[species ZAPDOS]
+Raijin
+Thunder
+
+[species MOLTRES]
+Firebird
+Phoenix
+Solstice
+
+[species DRATINI DRAGONAIR DRAGONITE]
+Drago
+Dratty
+Puff
+Ryu
+Seiryu
+
+[species MEWTWO]
+Genesis
+Oblivion
+Prototype
+
+[species MEW]
+Bubble
+Mewsie
+Origin
+Pinky
+
+[species NIDORAN_M NIDORINO NIDOKING]
+Duke
+King
+Nido
+
+[species NIDORAN_F NIDORINA NIDOQUEEN]
+Nida
+Queenie
+Regina
+
+[species FARFETCHD]
+Ducky
+Leek
+Quackers
+Scallion
+Sir
+
+[species CATERPIE METAPOD BUTTERFREE]
+Cater
+Flutter
+Monarch
+Pillar
+Silk
+
+[species WEEDLE KAKUNA BEEDRILL]
+Bee
+Buzz
+Honey
+Spike
+Stinger
+
+[species ODDISH GLOOM VILEPLUME]
+Bloom
+Odie
+Radish
+Stinky
+Turnip
+
+[species BELLSPROUT WEEPINBELL VICTREEBEL]
+Bell
+Chompers
+Sprout
+Twiggy
+
+[species TENTACOOL TENTACRUEL]
+Jelly
+Jellybean
+Squish
+Wobbles
+
+[species GRIMER MUK]
+Blobby
+Gloop
+Goopy
+Sludge
+
+[species SANDSHREW SANDSLASH]
+Dusty
+Prickles
+Sandy
+Spike
+
+[species DIGLETT DUGTRIO]
+Diggy
+Moley
+Spud
+Tater
+
+[species MANKEY PRIMEAPE]
+Bobo
+Grumpy
+Mojo
+Rage
+
+[species POLIWAG POLIWHIRL POLIWRATH]
+Croak
+Hypno
+Spiral
+Swirl
+Tadpole
+
+[species DROWZEE HYPNO]
+Dreamy
+Sandman
+Snooze
+
+[species VENONAT VENOMOTH]
+Dusty
+Fuzz
+
+[species PARAS PARASECT]
+Fungi
+Morel
+Shroom
+Toadstool
+Truffle
+
+[species MAGNEMITE MAGNETON]
+Bolt
+Gizmo
+Magnet
+Nuts
+Sprocket
+
+[species EKANS ARBOK]
+Cobra
+Hiss
+Snek
+
+[species SANDSHREW]
+Shrewie
+
+[species RHYHORN RHYDON]
+Rhino
+Rumble
+Tank
+
+[species GOLDEEN]
+Finny
+
+[species JIGGLYPUFF]
+Jiggly
+
+[species UMBREON]
+Eclipse
+Lunar
+Noctis
+Umbra
+
+[species ESPEON]
+Sol
+Solar
+Sunny
+
+[species TOGEPI TOGETIC]
+Angel
+Bliss
+Eggy
+Sunny
+Toge
+
+[species MAREEP FLAAFFY AMPHAROS]
+Beacon
+Fleece
+Lamby
+Lumen
+Wooly
+
+[species CYNDAQUIL QUILAVA TYPHLOSION]
+Ember
+Flicker
+Quill
+Smolder
+
+[species TOTODILE CROCONAW FERALIGATR]
+Chomp
+Croc
+Gator
+Snappy
+
+[species CHIKORITA BAYLEEF MEGANIUM]
+Bay
+Leafy
+Petal
+Posy
+
+[species HOOTHOOT NOCTOWL]
+Hoot
+
+[species SNEASEL]
+Claws
+Icepick
+Sneaky
+Snitch
+
+[species SKARMORY]
+Iron
+Rapier
+Saber
+Wing
+
+[species HERACROSS]
+Beetle
+Hercules
+Rhino
+
+[species WOOPER QUAGSIRE]
+Goofy
+Muddy
+Sunny
+Woop
+
+[species ZIGZAGOON LINOONE]
+Dash
+Scamper
+Ziggy
+Zigzag
+
+[species TORCHIC COMBUSKEN BLAZIKEN]
+Chick
+Ember
+Kicks
+Peep
+
+[species MUDKIP MARSHTOMP SWAMPERT]
+Bog
+Muddy
+Puddles
+
+[species TREECKO GROVYLE SCEPTILE]
+Gecko
+Leafy
+Sprig
+Twig
+
+[species RALTS KIRLIA GARDEVOIR]
+Ballet
+Belle
+Tutu
+
+[species WAILMER WAILORD]
+Blubber
+Bubbles
+Moby
+Spout
+
+[species SPHEAL SEALEO WALREIN]
+Blubber
+Roly
+Seally
+Tusk
+
+[species ABSOL]
+Bane
+Disaster
+Omen
+Scythe
+
+[species BELDUM METANG METAGROSS]
+Bolt
+Iron
+Magnet
+Rivet

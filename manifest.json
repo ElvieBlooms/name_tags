@@ -1,0 +1,22 @@
+{
+  "id": "name_tags",
+  "name": "Name Tags",
+  "version": "1.0.0",
+  "api": 2,
+  "entry": "main.lua",
+  "profile": "content",
+  "game_version": ">=0.0.0-dev <1.0.0",
+  "category": "GAMEPLAY",
+  "priority": 100,
+  "dependencies": [],
+  "optional_dependencies": [],
+  "conflicts": [],
+  "incompatible": [],
+  "games": [
+    "gen1",
+    "gen2",
+    "gen3"
+  ],
+  "experimental": false,
+  "description": "Gives every Pokémon you catch a random name that suits it, from themed sets you can switch on and off, matched to its gender."
+}
