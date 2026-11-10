@@ -17,6 +17,7 @@
     "gen2",
     "gen3"
   ],
+  "github": "ElvieBlooms/name_tags",
   "experimental": false,
   "description": "Gives every Pokémon you catch a random name that suits it, from themed sets you can switch on and off, matched to its gender."
 }
