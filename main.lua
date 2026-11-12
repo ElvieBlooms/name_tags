@@ -11,6 +11,8 @@
 -- genderless Pokémon drawing neutral names only. Gen 1 uses the Gen 2 rule.
 -- Gifts go through pokemon.before_give (Gen 1 and Gen 3) when GIFTS is AUTO.
 -- In-game trades keep their own names, and the Name Rater still works as usual.
+-- With Recomp Achievements installed, catches and canon trainer battles earn
+-- achievements on a NAME TAGS tab; without it that part stays off.
 -- ------------------
 
 -- Each .txt file in names/ is a set the player can switch off. Inside a file:
@@ -210,7 +212,8 @@ local GENDER_POOLS = {
 }
 
 -- Pick a name. types is a list of type ids; gender is male, female, none or
--- nil; rand() returns a float in [0, 1). Returns nil only when every
+-- nil; rand() returns a float in [0, 1). Returns the name and the pool it
+-- came from ("species", "type" or "general"), or nil only when every
 -- switched-on list is empty.
 local function pickName(pools, species, types, used, themed, rand, gender)
   local weights = THEME_WEIGHTS[themed] or THEME_WEIGHTS.sometimes
@@ -226,19 +229,19 @@ local function pickName(pools, species, types, used, themed, rand, gender)
   local function from(list) return list[math.floor(rand() * #list) + 1] end
 
   local roll = rand()
-  if #speciesPool > 0 and roll < weights.species then return from(speciesPool) end
-  if #typePool > 0 and roll < weights.species + weights.type then return from(typePool) end
+  if #speciesPool > 0 and roll < weights.species then return from(speciesPool), "species" end
+  if #typePool > 0 and roll < weights.species + weights.type then return from(typePool), "type" end
   local everyone = {}
   for _, name in ipairs(pools.all) do everyone[#everyone + 1] = name end
   for _, g in ipairs(GENDER_POOLS[gender or "unknown"] or GENDER_POOLS.unknown) do
     for _, name in ipairs(pools.gender and pools.gender[g] or {}) do everyone[#everyone + 1] = name end
   end
   local general = unused(everyone, used)
-  if #general > 0 then return from(general) end
+  if #general > 0 then return from(general), "general" end
   -- Every general name is taken: themed names next, then repeats.
-  if #speciesPool > 0 then return from(speciesPool) end
-  if #typePool > 0 then return from(typePool) end
-  if #everyone > 0 then return from(everyone) end
+  if #speciesPool > 0 then return from(speciesPool), "species" end
+  if #typePool > 0 then return from(typePool), "type" end
+  if #everyone > 0 then return from(everyone), "general" end
   return nil
 end
 
@@ -294,13 +297,14 @@ local function seededRand(seed)
   end
 end
 
--- Names for a trainer's party, by slot (nil keeps the species name).
+-- Names for a trainer's party, by slot (nil keeps the species name), and
+-- which slots got a canon name.
 -- Canon names come first: an entry for this trainer names the slot holding
 -- its exact species, or failing that the highest-level member of its family,
 -- and each entry names one slot. With mode "all" the other slots get names
 -- from the switched-on sets, never two the same in one party.
 local function trainerNames(pools, trainerName, seed, rows, mode, themed, typesOf, gender)
-  local names, used = {}, {}
+  local names, used, canon = {}, {}, {}
   local tkey = trainerName and speciesKey(trainerName)
   if tkey and tkey ~= "" then
     local mine = {}
@@ -311,8 +315,8 @@ local function trainerNames(pools, trainerName, seed, rows, mode, themed, typesO
       local r = seededRand(seed .. "|canon|" .. entry.species[1])
       local name = entry.names[math.floor(r() * #entry.names) + 1]
       names[slot] = name
+      canon[slot] = true
       used[name:upper()] = true
-      entry = nil
     end
     -- exact species first, for every entry, so a family fallback never takes
     -- a slot another entry names exactly (Flannery's Slugma and Magcargo)
@@ -355,7 +359,7 @@ local function trainerNames(pools, trainerName, seed, rows, mode, themed, typesO
       end
     end
   end
-  return names
+  return names, canon
 end
 
 local function applyCase(name, case)
@@ -370,6 +374,121 @@ local function isUnnamed(mon, species)
   if nick == nil or nick == "" then return true end
   local key = speciesKey(nick)
   return key == speciesKey(species) or key == speciesKey(mon.name)
+end
+
+-- Achievements for Recomp Achievements, when it's installed. The trainer
+-- ones are Gold, Silver and Crystal only for now: those are the games that
+-- show a trainer's Pokémon names today.
+local TRAINER_GAMES = { "gold", "silver", "crystal" }
+local ACHIEVEMENTS = {
+  { id = "first_name", title = "Hello, My Name Is", points = 1, category = "CATCHES",
+    description = "Name Tags names your first catch." },
+  { id = "roll_call", title = "Roll Call", points = 5, category = "CATCHES", goal = 25, unit = "NAMES",
+    description = "Have Name Tags name 25 catches." },
+  { id = "name_badges", title = "Name Badge Collector", points = 10, category = "CATCHES", goal = 100, unit = "NAMES",
+    description = "Have Name Tags name 100 catches." },
+  { id = "canon_event", title = "Canon Event", points = 5, category = "CATCHES",
+    description = "A catch gets a canon nickname from its own family, like a Pikachu named Pika or Sparky." },
+  { id = "just_their_type", title = "Just Their Type", points = 2, category = "CATCHES",
+    description = "A catch gets a name from its type's own list, like a Fire type named Cinder." },
+  { id = "fresh_from_oven", title = "Fresh From the Oven", points = 2, category = "CATCHES",
+    description = "A catch gets a name from the BAKED GOODS set." },
+  { id = "bakery_run", title = "Bakery Run", points = 10, category = "CATCHES",
+    description = "Have a full party of six, every one named from BAKED GOODS." },
+  { id = "six_of_a_kind", title = "Six of a Kind", points = 10, category = "CATCHES",
+    description = "Have a full party of six, every one named from the same set." },
+  { id = "pop_quiz", title = "Pop Quiz", points = 2, category = "CATCHES", hidden = true,
+    description = "A catch gets a name from POP CULTURE or MEMES." },
+  { id = "name_recognition", title = "Name Recognition", points = 5, category = "TRAINERS",
+    goal = 10, unit = "POKEMON", games = TRAINER_GAMES,
+    description = "Face 10 trainer Pokemon that carry a canon name." },
+  { id = "lightning_rod", title = "Lightning Rod", points = 3, category = "TRAINERS", games = TRAINER_GAMES,
+    description = "Battle Lt. Surge while Volty is out." },
+  { id = "red_four", title = "Pika, Vee, Snor and Saur", points = 15, category = "TRAINERS",
+    games = TRAINER_GAMES, hidden = true,
+    description = "Face all four of Red's named Pokemon on Mt. Silver in one battle." },
+  { id = "fafa_milmil", title = "Fafa and MilMil", points = 3, category = "TRAINERS", games = TRAINER_GAMES,
+    description = "Face both of Whitney's named Pokemon in one battle." },
+  { id = "hometown_heroes", title = "Hometown Heroes", points = 10, category = "TRAINERS",
+    goal = 5, unit = "TRAINERS", games = TRAINER_GAMES,
+    description = "Face the canon-named Pokemon of five different trainers." },
+}
+
+-- Every name in each set, in capitals, whatever section it's in.
+local function setIndex(lib)
+  local index = {}
+  for setId, set in pairs(lib.sets) do
+    local names = {}
+    local function add(list) for _, n in ipairs(list or {}) do names[n:upper()] = true end end
+    add(set.all)
+    for _, list in pairs(set.gender) do add(list) end
+    for _, list in pairs(set.types) do add(list) end
+    for _, list in pairs(set.species) do add(list) end
+    for _, entry in ipairs(set.trainers or {}) do add(entry.names) end
+    index[setId] = names
+  end
+  return index
+end
+
+-- What a newly named catch earns, apart from the counters. kind is where
+-- pickName took the name from; enabled(setId) says whether a set is on.
+local function catchUnlocks(lib, index, enabled, species, name, kind)
+  local out = {}
+  if type(name) ~= "string" then return out end
+  local up = name:upper()
+  local function on(setId) return lib.sets[setId] and enabled(setId) end
+  local canon = lib.sets.set_canon
+  if kind == "species" and on("set_canon") then
+    for _, n in ipairs(canon.species[speciesKey(species)] or {}) do
+      if n:upper() == up then out[#out + 1] = "canon_event" break end
+    end
+  end
+  if kind == "type" then out[#out + 1] = "just_their_type" end
+  if on("set_baked_goods") and index.set_baked_goods and index.set_baked_goods[up] then
+    out[#out + 1] = "fresh_from_oven"
+  end
+  for _, setId in ipairs({ "set_pop_culture", "set_memes" }) do
+    if on(setId) and index[setId] and index[setId][up] then out[#out + 1] = "pop_quiz" break end
+  end
+  return out
+end
+
+-- What a party earns: six nicknames all from BAKED GOODS, or all from one set.
+local function partyUnlocks(lib, index, nicknames)
+  local out = {}
+  if #nicknames < 6 then return out end
+  local function all(setId)
+    local names = index[setId]
+    if not names then return false end
+    for _, n in ipairs(nicknames) do
+      if type(n) ~= "string" or not names[n:upper()] then return false end
+    end
+    return true
+  end
+  if all("set_baked_goods") then out[#out + 1] = "bakery_run" end
+  for _, setId in ipairs(lib.order) do
+    if all(setId) then out[#out + 1] = "six_of_a_kind" break end
+  end
+  return out
+end
+
+-- What one trainer battle has earned so far. team is { trainer = key,
+-- canon = { NAME = true } } as named in trainer.party; seen is the canon
+-- names that have been out against you, in capitals.
+local TRAINER_TEAMS = { red_four = { "RED", 4 }, fafa_milmil = { "WHITNEY", 2 } }
+local function trainerUnlocks(team, seen)
+  local out = {}
+  local count, total = 0, 0
+  for n in pairs(team.canon) do
+    total = total + 1
+    if seen[n] then count = count + 1 end
+  end
+  if team.trainer == "LTSURGE" and seen.VOLTY then out[#out + 1] = "lightning_rod" end
+  for id, want in pairs(TRAINER_TEAMS) do
+    if team.trainer == want[1] and total >= want[2] and count == total then out[#out + 1] = id end
+  end
+  table.sort(out)
+  return out
 end
 
 -- Option key and label for a list file: food.txt is set_food, FOOD.
@@ -387,6 +506,8 @@ local Core = {
   applyCase = applyCase, isUnnamed = isUnnamed, setOption = setOption,
   genderOf = genderOf, gen1Gender = gen1Gender,
   trainerNames = trainerNames, seededRand = seededRand,
+  ACHIEVEMENTS = ACHIEVEMENTS, TRAINER_GAMES = TRAINER_GAMES, setIndex = setIndex,
+  catchUnlocks = catchUnlocks, partyUnlocks = partyUnlocks, trainerUnlocks = trainerUnlocks,
   speciesKey = speciesKey, typeKey = typeKey, MAX_LEN = MAX_LEN,
 }
 
@@ -476,13 +597,18 @@ return function(mod)
     return namesInUse(game and game.save, party)
   end
 
+  -- A name and the pool it came from, which the achievements read.
   local function nameFor(species, mon, game)
     game = game or mod.game
     local gender = mod.options:get("gender") ~= false and genderOf(species, mon) or nil
-    local name = pickName(pools(), species, typesOf(species, mon), inUse(game),
+    local name, kind = pickName(pools(), species, typesOf(species, mon), inUse(game),
       mod.options:get("themed"), rand, gender)
-    return name and applyCase(name, mod.options:get("case"))
+    return name and applyCase(name, mod.options:get("case")), kind
   end
+
+  -- Recomp Achievements, when it's installed. It loads first as an optional
+  -- dependency; without it every call below is a no-op.
+  local achieve = { caught = function() end, party = function() end }
 
   -- Mons this mod named, so the hook and the event never name one twice.
   local named = setmetatable({}, { __mode = "k" })
@@ -561,8 +687,11 @@ return function(mod)
     if verdict ~= true or mod.options:get("catches") ~= "auto" then return verdict end
     -- already named at the ball throw (Gen 3 may hand over a copy by now)
     if type(mon.nickname) == "string" and not isUnnamed(mon, mon.species) then return mon.nickname end
-    local name = nameFor(mon.species, mon, ctx and ctx.game)
-    if name then named[mon] = true end
+    local name, kind = nameFor(mon.species, mon, ctx and ctx.game)
+    if name then
+      named[mon] = true
+      achieve.caught(mon.species, name, kind)
+    end
     return name or verdict
   end)
 
@@ -573,13 +702,16 @@ return function(mod)
     if mod.options:get("catches") ~= "auto" then return end
     local mon = ev.mon
     local species = ev.species or (mon and mon.species)
-    if type(mon) ~= "table" or named[mon] or not isUnnamed(mon, species) then return end
-    local name = nameFor(species, mon, ev.game)
-    if name then
-      mon.nickname = name
-      named[mon] = true
-      armQuestion(mon, name)
+    if type(mon) == "table" and not named[mon] and isUnnamed(mon, species) then
+      local name, kind = nameFor(species, mon, ev.game)
+      if name then
+        mon.nickname = name
+        named[mon] = true
+        armQuestion(mon, name)
+        achieve.caught(species, name, kind)
+      end
     end
+    achieve.party()
   end, -100)
 
   -- Gen 3 hands over the caught Pokémon with the ball throw, before it's
@@ -592,11 +724,12 @@ return function(mod)
     local mon = ev.mon
     local species = ev.species or (type(mon) == "table" and mon.species)
     if type(mon) ~= "table" or named[mon] or not isUnnamed(mon, species) then return end
-    local name = nameFor(species, mon, ev.game)
+    local name, kind = nameFor(species, mon, ev.game)
     if name then
       mon.nickname = name
       named[mon] = true
       armQuestion(mon, name)
+      achieve.caught(species, name, kind)
     end
   end, -100)
 
@@ -632,17 +765,30 @@ return function(mod)
   -- Gold, Silver and Crystal show these names today; Red, Blue, Yellow and
   -- the Gen 3 games need the engine to carry a party row's nickname into the
   -- battle (see the README).
+  -- The canon names on the last team named here, for the trainer
+  -- achievements. battle.started picks it up.
+  local lastTeam
   mod.hooks:wrap("trainer.party", function(nextHook, cls, idx, party)
     local rows = nextHook(cls, idx, party)
+    lastTeam = nil
     local mode = mod.options:get("trainers")
     if mode == "off" or type(rows) ~= "table" or #rows == 0 then return rows end
     local gender = mod.options:get("gender") ~= false and "none" or nil
-    local names = trainerNames(pools(), trainerNameOf(cls, idx), tostring(cls) .. "|" .. tostring(idx),
+    local trainerName = trainerNameOf(cls, idx)
+    local names, canon = trainerNames(pools(), trainerName, tostring(cls) .. "|" .. tostring(idx),
       rows, mode, mod.options:get("themed"), typesOf, gender)
     local any = false
     for _ in pairs(names) do any = true break end
     if not any then return rows end
     local case = mod.options:get("case")
+    local team = { trainer = speciesKey(trainerName), canon = {}, any = false }
+    for i in pairs(canon) do
+      if type(rows[i]) == "table" and (rows[i].nickname == nil or rows[i].nickname == "") then
+        team.canon[applyCase(names[i], case):upper()] = true
+        team.any = true
+      end
+    end
+    if team.any then lastTeam = team end
     local out = {}
     for i, row in ipairs(rows) do
       if type(row) == "table" then
@@ -660,6 +806,121 @@ return function(mod)
     end
     return out
   end)
+
+  -- Recomp Achievements. Written for its API 1.x; any other version, or no
+  -- install, leaves the achievements off and nothing else changes.
+  local found = mod.find and mod.find("recomp_achievements")
+  local ach = found and found.exports
+  local major = ach and tonumber(tostring(ach.apiVersion or ""):match("^(%d+)"))
+  local handle
+  if major == 1 and type(ach.connect) == "function" then
+    local code, message
+    handle, code, message = ach.connect(mod, { tab = "NAME TAGS" })
+    if not handle then mod.log:warn("achievements: connect failed: %s %s", tostring(code), tostring(message)) end
+  elseif ach then
+    mod.log:warn("achievements: API %s isn't one Name Tags knows, so they're off", tostring(ach.apiVersion))
+  end
+
+  if handle then
+    local okCount, errors = handle:registerMany(ACHIEVEMENTS)
+    for i, err in pairs(errors or {}) do
+      mod.log:warn("achievement %d rejected: %s %s", i, tostring(err[1]), tostring(err[2]))
+    end
+    mod.log:info("%d achievements registered", okCount or 0)
+
+    local index = setIndex(lib)
+    local function enabled(setId) return mod.options:get(setId) ~= false end
+    local function unlock(id) handle:unlock(id) end
+
+    achieve.caught = function(species, name, kind)
+      unlock("first_name")
+      handle:addProgress("roll_call", 1)
+      handle:addProgress("name_badges", 1)
+      for _, id in ipairs(catchUnlocks(lib, index, enabled, species, name, kind)) do unlock(id) end
+    end
+
+    -- mod.world:party where the game has it, and the save's own party
+    -- otherwise (Gold, Silver and Crystal for an API 2 mod).
+    achieve.party = function()
+      local ok, party = pcall(function() return mod.world and mod.world:party() end)
+      if not ok or type(party) ~= "table" then
+        local game = mod.game
+        party = game and game.save and game.save.party
+      end
+      if type(party) ~= "table" then return end
+      local nicknames = {}
+      for _, mon in ipairs(party) do
+        nicknames[#nicknames + 1] = type(mon) == "table" and mon.nickname or nil
+      end
+      if #nicknames < #party then return end
+      for _, id in ipairs(partyUnlocks(lib, index, nicknames)) do unlock(id) end
+    end
+
+    mod.events:on(ach.events.ready, function() achieve.party() end)
+
+    -- Trainer battles, in the games that show trainers' names today. The
+    -- foe's Pokémon counts once it's out against you: the lead at
+    -- battle.started, and every one after it at battle.battler_switched.
+    local trainerGame = {}
+    for _, g in ipairs(TRAINER_GAMES) do trainerGame[g] = true end
+    local battle
+    -- The foe's Pokémon on a battle: Gen 2's battle.started sends the battle
+    -- screen, whose .battle holds it; the other events send the battle itself.
+    local function nicknameOf(mon)
+      if type(mon) ~= "table" then return nil end
+      if type(mon.nickname) == "string" then return mon.nickname:upper() end
+      if type(mon.mon) == "table" and type(mon.mon.nickname) == "string" then return mon.mon.nickname:upper() end
+      return nil
+    end
+    local function enemyNickname(b)
+      if type(b) ~= "table" then return nil end
+      return nicknameOf(b.enemy) or (type(b.battle) == "table" and nicknameOf(b.battle.enemy)) or nil
+    end
+    local function look(b, nick)
+      if not battle then return end
+      nick = nick or enemyNickname(b)
+      if not nick or not battle.team.canon[nick] or battle.seen[nick] then return end
+      battle.seen[nick] = true
+      handle:addProgress("name_recognition", 1)
+      local heroes = mod.save:get("heroes", {})
+      if type(heroes) ~= "table" then heroes = {} end
+      if not heroes[battle.team.trainer] then
+        heroes[battle.team.trainer] = true
+        mod.save:set("heroes", heroes)
+      end
+      local count = 0
+      for _ in pairs(heroes) do count = count + 1 end
+      handle:setProgress("hometown_heroes", count)
+      for _, id in ipairs(trainerUnlocks(battle.team, battle.seen)) do unlock(id) end
+    end
+    -- Gold, Silver and Crystal send battle.started twice for one battle (the
+    -- screen, then the battle), so a second one with no new team keeps the
+    -- battle already being followed.
+    mod.events:on("battle.started", function(ev)
+      local team = lastTeam
+      lastTeam = nil
+      achieve.party()
+      if ev.kind ~= "trainer" then battle = nil return end
+      if team then
+        local okG, game = pcall(ach.currentGame)
+        battle = (okG and trainerGame[game]) and { team = team, seen = {} } or nil
+      end
+      look(ev.battle)
+    end)
+    mod.events:on("battle.turn_started", function(ev) look(ev.battle) end)
+    mod.events:on("battle.battler_switched", function(ev)
+      local b = ev.battle
+      -- only the foe's side: the player's own Volty walking in doesn't count
+      if type(b) == "table" and ev.battler ~= nil and ev.battler == b.enemy then
+        look(b, nicknameOf(ev.battler))
+      end
+    end)
+    mod.events:on("battle.fainted", function(ev) look(ev.battle) end)
+    mod.events:on("battle.ended", function(ev)
+      look(ev.battle)
+      battle = nil
+    end)
+  end
 
   -- Gifts: starters, Eevee, fossils, Lapras and the rest (Gen 1 and Gen 3).
   -- Runs late so a mod that swaps the gift's species has already done so.

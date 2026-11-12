@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.0
+
+Achievements, for players with Recomp Achievements installed.
+
+- 14 achievements on their own **NAME TAGS** tab: nine for catches in every game (first name, 25 and 100 names, a canon name on its own family, a type name, baked goods, a full party from one set, a hidden one for pop culture), and five for canon trainers in Gold, Silver and Crystal (Lt. Surge's Volty, Red's four, Whitney's two, 10 named Pokémon faced, five trainers).
+- Recomp Achievements is an optional dependency. Without it, nothing changes.
+
 ## 1.1.0
 
 Trainers' Pokémon get names too, and canon nicknames from the games, anime and manga join the mix.

@@ -38,6 +38,36 @@ A name goes to the exact species first, and otherwise to the nearest member of i
 
 **Where this works today:** Gold, Silver and Crystal. Red, Blue, Yellow and the Gen 3 games need a small engine change before the names show in battle. It's been suggested upstream, and Name Tags picks it up with no update once it's in.
 
+## Achievements
+
+With [Recomp Achievements](https://github.com/ElvieBlooms/recomp_achievements) installed, Name Tags adds 14 achievements under its own **NAME TAGS** tab in the TROPHIES menu. They count toward Extra Credit, not the main leaderboard. Without Recomp Achievements, nothing changes.
+
+**Catches** (every game)
+
+| Achievement | How | Points |
+|---|---|---|
+| Hello, My Name Is | Name Tags names your first catch | 1 |
+| Roll Call | Name Tags names 25 catches | 5 |
+| Name Badge Collector | Name Tags names 100 catches | 10 |
+| Canon Event | A catch gets a canon nickname from its own family, like a Pikachu named Pika | 5 |
+| Just Their Type | A catch gets a name from its type's own list | 2 |
+| Fresh From the Oven | A catch gets a **BAKED GOODS** name | 2 |
+| Bakery Run | A full party of six, every one named from **BAKED GOODS** | 10 |
+| Six of a Kind | A full party of six, every one named from the same set | 10 |
+| Pop Quiz (hidden) | A catch gets a **POP CULTURE** or **MEMES** name | 2 |
+
+**Trainers** (Gold, Silver and Crystal)
+
+| Achievement | How | Points |
+|---|---|---|
+| Name Recognition | Face 10 trainer Pokémon that carry a canon name | 5 |
+| Lightning Rod | Battle Lt. Surge while Volty is out | 3 |
+| Pika, Vee, Snor and Saur (hidden) | Face all four of Red's named Pokémon in one battle | 15 |
+| Fafa and MilMil | Face both of Whitney's named Pokémon in one battle | 3 |
+| Hometown Heroes | Face the canon-named Pokémon of five different trainers | 10 |
+
+A trainer's Pokémon counts once it's out against you. The trainer achievements only appear in Gold, Silver and Crystal for now, since those are the games that show trainers' names today. They'll come to the other games in a later update.
+
 ## Options
 
 Set these in the mod manager.

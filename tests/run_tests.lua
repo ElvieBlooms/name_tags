@@ -155,7 +155,7 @@ check(used.ANNA and used.BOB and used.KIT and used.GEN3, "party, boxes, Day-Care
 check(not used.NOTAMON, "unrelated save tables not walked")
 
 -- Wiring with a stand-in mod object
-local function load(opts, extra)
+local function load(opts, extra, setup)
   local m = { exports = {}, logs = {} }
   m.options = { define = function(_, rows) m.rows = rows end, get = function(_, key)
     if opts[key] ~= nil then return opts[key] end
@@ -169,6 +169,7 @@ local function load(opts, extra)
   m.content = { pokemon = { get = function(_, id) return (extra or {})[id] end } }
   local function logger(level) return function(_, fmt, ...) m.logs[#m.logs + 1] = level .. " " .. fmt:format(...) end end
   m.log = { info = logger("info"), warn = logger("warn"), error = logger("error") }
+  if setup then setup(m) end
   entry(m)
   return m, hooks, events
 end
@@ -404,7 +405,7 @@ do
     and red[5] == nil and red[6] == nil, "Red's team")
   local red2 = team("RED", "RED|RED1", { { species = "PIKACHU" }, { species = "ESPEON" }, { species = "SNORLAX" } })
   check(red2[3] == red[3], "Lax or Snor stays the same every battle")
-  check(next(team("YOUNGSTER", "OPP_YOUNGSTER|1", { { species = "RATTATA" } })) == nil, "CANON leaves other trainers alone")
+  check(next((team("YOUNGSTER", "OPP_YOUNGSTER|1", { { species = "RATTATA" } }))) == nil, "CANON leaves other trainers alone")
   local joey = { { species = "RATTATA", level = 4 }, { species = "PIDGEY", level = 5 }, { species = "RATTATA", level = 6 } }
   local a1 = team("JOEY", "YOUNGSTER|JOEY1", joey, "all")
   local a2 = team("JOEY", "YOUNGSTER|JOEY1", joey, "all")
@@ -474,6 +475,249 @@ for _ = 1, 800 do
   box[#box + 1] = { species = "EEVEE", nickname = n }
 end
 check(not dup, "800 catches, no repeated names")
+
+
+-- ------- Achievements -------
+
+-- the definitions pass the framework's own rules (docs/PROVIDER_API.md)
+local VERSIONS = { red = 1, blue = 1, yellow = 1, gold = 1, silver = 1, crystal = 1, ruby = 1,
+  sapphire = 1, emerald = 1, firered = 1, leafgreen = 1 }
+local ids, defsOk, trainerOk = {}, true, true
+for _, d in ipairs(Core.ACHIEVEMENTS) do
+  local ok = type(d.id) == "string" and d.id:match("^[a-z0-9_%-]+$") and #d.id <= 48 and not ids[d.id]
+    and type(d.title) == "string" and #d.title <= 32 and type(d.description) == "string" and #d.description <= 160
+    and type(d.points) == "number" and d.points >= 0 and d.points <= 100
+    and (d.category == nil or #d.category <= 16) and (d.goal == nil or d.goal > 0)
+  for _, g in ipairs(d.games or {}) do ok = ok and VERSIONS[g] == 1 end
+  if not ok then defsOk = false; print("  bad definition " .. tostring(d.id)) end
+  ids[d.id] = true
+  if d.category == "TRAINERS" then
+    trainerOk = trainerOk and d.games and table.concat(d.games, ",") == "gold,silver,crystal"
+  else
+    trainerOk = trainerOk and d.games == nil
+  end
+end
+check(#Core.ACHIEVEMENTS == 14 and defsOk, "14 achievement definitions, all within the framework's limits")
+check(trainerOk, "trainer achievements are Gold, Silver and Crystal only; catch ones are every game")
+
+local index = Core.setIndex(lib)
+local allOn = function() return true end
+local function has(list, want) for _, v in ipairs(list) do if v == want then return true end end return false end
+local cu = Core.catchUnlocks(lib, index, allOn, "PIKACHU", "PIKA", "species")
+check(has(cu, "canon_event"), "a canon species name on its own family is a Canon Event")
+check(not has(Core.catchUnlocks(lib, index, allOn, "PIKACHU", "PIKA", "general"), "canon_event"),
+  "the same name from the general pool isn't")
+check(not has(Core.catchUnlocks(lib, index, function(id) return id ~= "set_canon" end, "PIKACHU", "PIKA", "species"),
+  "canon_event"), "nor with CANON off")
+check(has(Core.catchUnlocks(lib, index, allOn, "NINETALES", "CINDER", "type"), "just_their_type"), "a type-pool name is Just Their Type")
+check(has(Core.catchUnlocks(lib, index, allOn, "PIDGEY", "Brioche", "general"), "fresh_from_oven"), "a baked goods name is Fresh From the Oven")
+check(not has(Core.catchUnlocks(lib, index, function(id) return id ~= "set_baked_goods" end, "PIDGEY", "Brioche", "general"),
+  "fresh_from_oven"), "but not with BAKED GOODS off")
+local popName = lib.sets.set_pop_culture.all[1]
+check(has(Core.catchUnlocks(lib, index, allOn, "PIDGEY", popName, "general"), "pop_quiz"), "a pop culture name is a Pop Quiz")
+check(not has(Core.catchUnlocks(lib, index, function(id) return id ~= "set_pop_culture" and id ~= "set_memes" end,
+  "PIDGEY", popName, "general"), "pop_quiz"), "only with the set on")
+
+local bakery = { "BAGEL", "SCONE", "BRIOCHE", "MUFFIN", "PRETZEL", "Toast" }
+local pu = Core.partyUnlocks(lib, index, bakery)
+check(has(pu, "bakery_run") and has(pu, "six_of_a_kind"), "six baked goods: Bakery Run and Six of a Kind")
+check(#Core.partyUnlocks(lib, index, { "BAGEL", "SCONE", "BRIOCHE", "MUFFIN", "PRETZEL" }) == 0, "five isn't a full party")
+local mixed = Core.partyUnlocks(lib, index, { "BAGEL", "SCONE", "BRIOCHE", "MUFFIN", "PRETZEL", "PIKA" })
+check(not has(mixed, "bakery_run"), "one name from elsewhere breaks a Bakery Run")
+local pe = lib.sets.set_people.gender.male
+local people = Core.partyUnlocks(lib, index, { pe[1], pe[2], pe[3], pe[4], pe[5], pe[6] })
+check(has(people, "six_of_a_kind") and not has(people, "bakery_run"), "six people names: Six of a Kind only")
+
+local surge = { trainer = "LTSURGE", canon = { VOLTY = true } }
+check(has(Core.trainerUnlocks(surge, { VOLTY = true }), "lightning_rod"), "Volty out against you: Lightning Rod")
+check(#Core.trainerUnlocks(surge, {}) == 0, "not before Volty is out")
+local red = { trainer = "RED", canon = { PIKA = true, VEE = true, SNOR = true, SAUR = true } }
+check(not has(Core.trainerUnlocks(red, { PIKA = true, VEE = true, SNOR = true }), "red_four"), "three of Red's four isn't enough")
+check(has(Core.trainerUnlocks(red, { PIKA = true, VEE = true, SNOR = true, SAUR = true }), "red_four"), "all four of Red's")
+local whitney = { trainer = "WHITNEY", canon = { FAFA = true, MILMIL = true } }
+check(has(Core.trainerUnlocks(whitney, { FAFA = true, MILMIL = true }), "fafa_milmil"), "both of Whitney's")
+check(not has(Core.trainerUnlocks({ trainer = "WHITNEY", canon = { FAFA = true } }, { FAFA = true }), "fafa_milmil"),
+  "a Whitney team with only Fafa named doesn't count")
+
+-- the mod with a stand-in framework
+local function fakeAchievements(game)
+  local fw = { unlocked = {}, progress = {}, defs = {}, game = game }
+  local h = {}
+  function h:registerMany(list) for _, d in ipairs(list) do fw.defs[d.id] = d end return #list, {} end
+  local function allowed(id)
+    local d = fw.defs[id]
+    if not d then return false end
+    if d.games then
+      local ok = false
+      for _, g in ipairs(d.games) do ok = ok or g == fw.game end
+      return ok
+    end
+    return true
+  end
+  function h:unlock(id) if allowed(id) then fw.unlocked[id] = true return true end return nil, "wrong_game" end
+  function h:addProgress(id, n)
+    if not allowed(id) then return nil, "wrong_game" end
+    fw.progress[id] = (fw.progress[id] or 0) + (n or 1)
+    if fw.defs[id].goal and fw.progress[id] >= fw.defs[id].goal then fw.unlocked[id] = true end
+    return true
+  end
+  function h:setProgress(id, n)
+    if not allowed(id) then return nil, "wrong_game" end
+    fw.progress[id] = n
+    if fw.defs[id].goal and n >= fw.defs[id].goal then fw.unlocked[id] = true end
+    return true
+  end
+  fw.exports = {
+    apiVersion = "1.4.0",
+    connect = function(_, opts) fw.tab = opts and opts.tab return h end,
+    currentGame = function() return fw.game end,
+    events = { ready = "mod.recomp_achievements.ready" },
+  }
+  return fw
+end
+
+local function withAchievements(game, party, opts)
+  local fw = fakeAchievements(game)
+  local store = {}
+  local m2, hk, ev = load(opts or {}, records, function(mm)
+    mm.find = function(id) if id == "recomp_achievements" then return { exports = fw.exports } end end
+    mm.world = { party = function() return party end }
+    mm.save = { get = function(_, k, d) if store[k] == nil then return d end return store[k] end,
+      set = function(_, k, v) store[k] = v end }
+  end)
+  return fw, m2, hk, ev, store
+end
+
+local fw, m3, hk3, ev3 = withAchievements("crystal", {})
+check(fw.tab == "NAME TAGS", "connects with its own NAME TAGS tab")
+local defCount = 0
+for _ in pairs(fw.defs) do defCount = defCount + 1 end
+check(defCount == 14, "registers all 14")
+ev3["pokemon.caught"].fn({ mon = { species = "UMBREON", name = "UMBREON", types = { "DARK" } }, species = "UMBREON", game = game })
+check(fw.unlocked.first_name and fw.progress.roll_call == 1 and fw.progress.name_badges == 1, "a named catch: Hello, My Name Is, and both counters")
+hk3["catch.nickname"](function() return true end, { species = "NINETALES" }, { game = game })
+check(fw.progress.roll_call == 2, "Gen 1 catches count too")
+hk3["catch.nickname"](function() return "SPOT" end, { species = "NINETALES" }, { game = game })
+check(fw.progress.roll_call == 2, "a name from someone else doesn't count")
+
+-- a full bakery party, checked when a catch lands
+local party = {}
+for i, n in ipairs(bakery) do party[i] = { species = "PIDGEY", nickname = n } end
+-- no mod.world:party (Gold, Silver and Crystal for an API 2 mod): the save's party
+do
+  local fwP = fakeAchievements("crystal")
+  local _, _, evP = load({}, records, function(mm)
+    mm.find = function() return { exports = fwP.exports } end
+    mm.world = {}
+    mm.game = { save = { party = party } }
+  end)
+  evP["mod.recomp_achievements.ready"].fn({ game = "crystal", how = "loaded" })
+  check(fwP.unlocked.bakery_run, "Bakery Run reads the save's party when mod.world has no party")
+end
+local fwB, _, _, evB = withAchievements("red", party)
+evB["pokemon.caught"].fn({ mon = { species = "PIDGEY", nickname = "SKY" }, species = "PIDGEY", game = game })
+check(fwB.unlocked.bakery_run and fwB.unlocked.six_of_a_kind, "a bakery party earns Bakery Run in Red")
+evB["mod.recomp_achievements.ready"].fn({ game = "red", how = "loaded" })
+
+-- trainer battles: Crystal's Lt. Surge, then Red with four named
+local surgeRows = { { species = "RAICHU", level = 44 }, { species = "ELECTRODE", level = 40 } }
+local function fight(fwX, hk, ev, cls, idx, rows, order)
+  local out = hk["trainer.party"](function() return rows end, cls, idx, nil)
+  local function battleWith(slot) return { battle = { enemy = out[slot] } } end
+  ev["battle.started"].fn({ battle = battleWith(order[1]), kind = "trainer" })
+  for t = 2, #order do ev["battle.turn_started"].fn({ battle = battleWith(order[t]), turn = t }) end
+  ev["battle.ended"].fn({ battle = battleWith(order[#order]), result = "win" })
+  return out
+end
+local function trainersFor(game)
+  return function(mm)
+    mm.content.trainers = { get = function(_, id)
+      local t = { LT_SURGE = { trainers = { { id = "LT_SURGE1", name = "LT.SURGE" } } },
+        RED = { trainers = { { id = "RED1", name = "RED" } } },
+        WHITNEY = { trainers = { { id = "WHITNEY1", name = "WHITNEY" } } },
+        OPP_LT_SURGE = { name = "LT.SURGE" } }
+      return t[id]
+    end }
+  end
+end
+local function trainerRun(game)
+  local fwT = fakeAchievements(game)
+  local store = {}
+  local _, hk, ev = load({}, records, function(mm)
+    mm.find = function() return { exports = fwT.exports } end
+    mm.world = { party = function() return {} end }
+    mm.save = { get = function(_, k, d) if store[k] == nil then return d end return store[k] end,
+      set = function(_, k, v) store[k] = v end }
+    trainersFor(game)(mm)
+  end)
+  return fwT, hk, ev, store
+end
+
+local fwC, hkC, evC, storeC = trainerRun("crystal")
+fight(fwC, hkC, evC, "LT_SURGE", "LT_SURGE1", surgeRows, { 2, 2 })
+check(not fwC.unlocked.lightning_rod, "Surge's Electrode out isn't Lightning Rod")
+fight(fwC, hkC, evC, "LT_SURGE", "LT_SURGE1", surgeRows, { 2, 1 })
+check(fwC.unlocked.lightning_rod and fwC.progress.name_recognition == 1, "Volty out: Lightning Rod, and one for Name Recognition")
+check(fwC.progress.hometown_heroes == 1 and storeC.heroes.LTSURGE, "Surge is the first Hometown Hero")
+fight(fwC, hkC, evC, "LT_SURGE", "LT_SURGE1", surgeRows, { 1, 1, 1 })
+check(fwC.progress.name_recognition == 2 and fwC.progress.hometown_heroes == 1, "a rematch counts Volty again, not Surge")
+local redRows = { { species = "PIKACHU" }, { species = "ESPEON" }, { species = "SNORLAX" },
+  { species = "VENUSAUR" }, { species = "CHARIZARD" }, { species = "BLASTOISE" } }
+fight(fwC, hkC, evC, "RED", "RED1", redRows, { 1, 2, 3 })
+check(not fwC.unlocked.red_four, "three of Red's named Pokemon isn't all four")
+fight(fwC, hkC, evC, "RED", "RED1", redRows, { 1, 5, 2, 3, 6, 4 })
+check(fwC.unlocked.red_four and fwC.progress.hometown_heroes == 2, "all four in one battle: Pika, Vee, Snor and Saur")
+fight(fwC, hkC, evC, "WHITNEY", "WHITNEY1", { { species = "CLEFAIRY" }, { species = "MILTANK" } }, { 1, 2 })
+check(fwC.unlocked.fafa_milmil and fwC.progress.hometown_heroes == 3, "Fafa and MilMil")
+evC["battle.started"].fn({ battle = { battle = { enemy = { nickname = "VOLTY" } } }, kind = "wild" })
+evC["battle.turn_started"].fn({ battle = { battle = { enemy = { nickname = "VOLTY" } } }, turn = 2 })
+check(fwC.progress.name_recognition == 11, "a wild Pokemon named Volty doesn't count: " .. tostring(fwC.progress.name_recognition))
+
+-- Gen 2's own shape: the screen at battle.started, the battle itself after,
+-- and later Pokemon arriving through battle.battler_switched
+local fwS, hkS, evS = trainerRun("crystal")
+local outW = hkS["trainer.party"](function() return { { species = "CLEFAIRY" }, { species = "MILTANK" } } end,
+  "WHITNEY", "WHITNEY1", nil)
+local core = { enemy = outW[1] }
+evS["battle.started"].fn({ battle = { battle = core }, kind = "trainer" })
+evS["battle.started"].fn({ battle = core, kind = "trainer" })  -- Gen 2 sends it twice
+local mine = { species = "PIKACHU", nickname = "MILMIL" }
+evS["battle.battler_switched"].fn({ battle = core, battler = mine })
+check(not fwS.unlocked.fafa_milmil, "the player's own MilMil walking in doesn't count")
+core.enemy = outW[2]
+evS["battle.battler_switched"].fn({ battle = core, battler = outW[2] })
+check(fwS.unlocked.fafa_milmil and fwS.progress.name_recognition == 2, "Whitney's second Pokemon counts when she sends it out")
+
+-- LETTERS on Mixed: the names show as Volty and MilMil, and still count
+do
+  local fwM = fakeAchievements("crystal")
+  local _, hkM, evM = load({ case = "mixed" }, records, function(mm)
+    mm.find = function() return { exports = fwM.exports } end
+    mm.save = { get = function(_, _, d) return d end, set = function() end }
+    trainersFor("crystal")(mm)
+  end)
+  local outM = hkM["trainer.party"](function() return surgeRows end, "LT_SURGE", "LT_SURGE1", nil)
+  check(outM[1].nickname == "Volty", "Mixed shows Volty: " .. tostring(outM[1].nickname))
+  evM["battle.started"].fn({ battle = { battle = { enemy = outM[1] } }, kind = "trainer" })
+  check(fwM.unlocked.lightning_rod, "and Lightning Rod still counts on Mixed")
+end
+
+-- Red (the game): trainer names don't show there yet, so nothing is counted
+local fwR, hkR, evR, storeR = trainerRun("red")
+local out = hkR["trainer.party"](function() return { { species = "PIKACHU", level = 21 } } end, "OPP_LT_SURGE", 1, nil)
+evR["battle.started"].fn({ battle = { enemy = { mon = out[1] } }, kind = "trainer" })
+evR["battle.turn_started"].fn({ battle = { enemy = { mon = out[1] } }, turn = 2 })
+check(not fwR.unlocked.lightning_rod and fwR.progress.name_recognition == nil and storeR.heroes == nil,
+  "in Red the trainer achievements aren't counted, even with the name on the row")
+
+-- no framework, or a different major version: the mod runs as before
+local _, _, evN = load({}, records)
+check(evN["battle.turn_started"] == nil, "without Recomp Achievements no battle listeners are added")
+local fw2 = fakeAchievements("crystal"); fw2.exports.apiVersion = "2.0.0"
+local m4 = load({}, records, function(mm) mm.find = function() return { exports = fw2.exports } end end)
+local warned = false
+for _, l in ipairs(m4.logs) do warned = warned or l:find("isn't one Name Tags knows", 1, true) ~= nil end
+check(warned and next(fw2.defs) == nil, "an unknown API version registers nothing and says why")
 
 print(("%d passed, %d failed"):format(passes, failures))
 os.exit(failures == 0 and 0 or 1)
