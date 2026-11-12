@@ -1,0 +1,196 @@
+# Baked goods only: breads, cakes, pastries, pies, cookies and buns. Leave only BAKED GOODS
+# on for a team that smells like a bakery. A few suit some types better, so those are
+# listed under their type too.
+# One name per line, up to 10 letters. Letters only, with an inner hyphen allowed (Mary-Jo).
+
+[all]
+Babka
+Bagel
+Baguette
+Baklava
+Bannock
+Bara-Brith
+Bear-Claw
+Bialy
+Biscotti
+Biscuit
+Blondie
+Bostock
+Boule
+Bourbon
+Bread
+Breadstick
+Brioche
+Brownie
+Bun
+Bundt
+Cake
+Cannele
+Challah
+Cheesecake
+Chiffon
+Ciabatta
+Cinnabun
+Clafoutis
+Cobbler
+Concha
+Cookie
+Cornbread
+Croissant
+Crumble
+Cupcake
+Danish
+Eclair
+Empanada
+Ensaimada
+Fig-Roll
+Financier
+Flapjack
+Focaccia
+Fougasse
+Friand
+Galette
+Garibaldi
+Gingersnap
+Hamantash
+Hot-Cross
+Jaffa
+Jumble
+Kifli
+Kolache
+Kringle
+Kuchen
+Lamington
+Lardy-Cake
+Lebkuchen
+Linzer
+Loaf
+Macaron
+Madeleine
+Mandelbrot
+Marble
+Melonpan
+Meringue
+Muffin
+Naan
+Nanaimo
+Oatcake
+Palmier
+Panettone
+Parkin
+Pastry
+Pavlova
+Pecan-Pie
+Pie
+Pita
+Popover
+Pound-Cake
+Pretzel
+Puff
+Rugelach
+Rusk
+Rye
+Sally-Lunn
+Scone
+Shortbread
+Shortcake
+Simnel
+Soda-Bread
+Sourdough
+Spice-Cake
+Sponge
+Spongecake
+Stollen
+Strudel
+Sugar-Bun
+Swiss-Roll
+Tart
+Tartlet
+Teacake
+Tiramisu
+Toast
+Torte
+Turnover
+Twist
+Wafer
+Whoopie
+Zwieback
+
+[type FIRE]
+Cinnabun
+Gingersnap
+Hot-Cross
+Pretzel
+Scone
+Toast
+
+[type WATER]
+Chiffon
+Saltine
+Sponge
+Swiss-Roll
+
+[type GRASS]
+Babka
+Fig-Roll
+Rugelach
+
+[type ICE]
+Eclair
+Iced-Bun
+Meringue
+Pavlova
+Snowball
+Sugar-Cake
+
+[type ELECTRIC]
+Lemon-Bar
+Lemon-Tart
+Popover
+
+[type GROUND]
+Brownie
+Cornbread
+Oatcake
+Rye
+
+[type ROCK]
+Biscotti
+Hardtack
+Rock-Cake
+Rusk
+Zwieback
+
+[type BUG]
+Bee-Sting
+Honeycake
+
+[type GHOST]
+Angel-Cake
+Ladyfinger
+Soul-Cake
+
+[type PSYCHIC]
+Fortune
+Macaron
+Madeleine
+
+[type DARK]
+Black-Bun
+Dark-Rye
+Fudge-Cake
+
+[type DRAGON]
+Kringle
+Pandoro
+Stollen
+
+[type STEEL]
+Bundt
+Tin-Loaf
+
+[type NORMAL]
+Bread
+Bun
+Cookie
+Muffin

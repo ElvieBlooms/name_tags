@@ -31,9 +31,9 @@ for _, f in ipairs(FILES) do
 end
 for _, r in ipairs(lib.rejected) do print("  rejected " .. r) end
 check(#lib.rejected == 0, "shipped lists have no rejected lines")
-local want = { "set_food", "set_memes", "set_myths", "set_nature", "set_people", "set_pets", "set_pop_culture",
+local want = { "set_baked_goods", "set_canon", "set_food", "set_memes", "set_myths", "set_nature", "set_people", "set_pets", "set_pop_culture",
   "set_space", "set_species", "set_types" }
-check(table.concat(lib.order, ",") == table.concat(want, ","), "ten sets in file order: " .. table.concat(lib.order, ","))
+check(table.concat(lib.order, ",") == table.concat(want, ","), "twelve sets in file order: " .. table.concat(lib.order, ","))
 check(lib.sets.set_memes.defaultOn == false and lib.sets.set_pop_culture.defaultOn == false, "memes and pop culture start off")
 check(lib.sets.set_people.defaultOn == true, "people starts on")
 local pg = lib.sets.set_people.gender
@@ -177,11 +177,13 @@ local records = { NINETALES = { types = { "FIRE" } }, EEVEE = { types = { "NORMA
 local game = { save = { party = {}, boxes = {} } }
 
 local m, hooks, events = load({}, records)
-check(#m.rows == 16, "6 setting rows + 10 set toggles (" .. #m.rows .. ")")
-check(m.rows[7].type == "toggle" and m.rows[7].default == true and m.rows[7].label == "FOOD", "set rows are toggles")
-check(m.rows[8].label == "MEMES" and m.rows[8].default == false, "MEMES starts off")
-check(m.rows[13].label == "POP CULTURE" and m.rows[13].default == false, "POP CULTURE starts off")
-check(m.logs[#m.logs]:find("names in 10 sets"), "load logs the set count")
+check(#m.rows == 19, "7 setting rows + 12 set toggles (" .. #m.rows .. ")")
+check(m.rows[8].label == "BAKED GOODS" and m.rows[8].default == true, "BAKED GOODS starts on")
+check(m.rows[7].key == "trainers" and m.rows[7].default == "canon", "TRAINER TEAMS defaults to CANON")
+check(m.rows[9].type == "toggle" and m.rows[9].default == true and m.rows[9].label == "CANON", "CANON starts on")
+check(m.rows[11].label == "MEMES" and m.rows[11].default == false, "MEMES starts off")
+check(m.rows[16].label == "POP CULTURE" and m.rows[16].default == false, "POP CULTURE starts off")
+check(m.logs[#m.logs]:find("names in 12 sets"), "load logs the set count")
 local name = hooks["catch.nickname"](function() return true end, { species = "NINETALES" }, { game = game })
 check(type(name) == "string" and name == name:upper() and #name <= 10, "Gen 1 catch gets a CAPS name: " .. tostring(name))
 check(hooks["catch.nickname"](function() return false end, { species = "NINETALES" }, { game = game }) == false, "false stands")
@@ -219,8 +221,24 @@ local gift2 = { species = "EEVEE", ctx = { game = game } }
 events2["pokemon.before_give"].fn(gift2)
 check(type(gift2.nickname) == "string" and gift2.nickname ~= gift2.nickname:upper(), "GIFTS AUTO, Mixed: " .. tostring(gift2.nickname))
 
+-- Only BAKED GOODS on: every general pick is a baked good
+do
+  local onlyBaked = { set_food = false, set_canon = false, set_people = false, set_pets = false, set_nature = false,
+    set_myths = false, set_space = false, set_types = false, set_species = false, set_memes = false, set_pop_culture = false }
+  local _, hb = load(onlyBaked, records)
+  local baked = {}
+  for _, n in ipairs(lib.sets.set_baked_goods.all) do baked[n:upper()] = true end
+  for _, list in pairs(lib.sets.set_baked_goods.types) do for _, n in ipairs(list) do baked[n:upper()] = true end end
+  local allBaked, seen = true, nil
+  for _ = 1, 50 do
+    local n = hb["catch.nickname"](function() return true end, { species = "NINETALES" }, { game = { save = {} } })
+    if not baked[n] then allBaked = false; seen = n end
+  end
+  check(allBaked, "only BAKED GOODS switched on gives only baked goods: " .. tostring(seen))
+end
+
 -- Only FOOD on: every general pick is a food name
-local onlyFood = { set_people = false, set_pets = false, set_nature = false, set_myths = false,
+local onlyFood = { set_baked_goods = false, set_canon = false, set_people = false, set_pets = false, set_nature = false, set_myths = false,
   set_space = false, set_types = false, set_species = false, set_memes = false, set_pop_culture = false }
 local _, hooks3 = load(onlyFood, records)
 local foodNames = {}
@@ -246,16 +264,18 @@ for id, set in pairs(lib.sets) do
     local function add(list, plain)
       for _, n in ipairs(list) do onNames[n:upper()] = true; if plain then ungendered[n:upper()] = true end end
     end
-    add(set.all, true)
-    for _, list in pairs(set.types) do add(list, true) end
-    for _, list in pairs(set.species) do add(list, true) end
+    local plain = id ~= "set_canon"
+    add(set.all, plain)
+    for _, list in pairs(set.types) do add(list, plain) end
+    for _, list in pairs(set.species) do add(list, plain) end
     for g, list in pairs(set.gender) do add(list, g == "neutral") end
   end
 end
 local peopleNames = onNames
 local both = {}
 for id, set in pairs(lib.sets) do
-  if set.defaultOn then
+  -- canon names are what a real Pokémon was called, gender and all
+  if set.defaultOn and id ~= "set_canon" then
     for g, list in pairs(set.gender) do
       if g ~= "neutral" then
         for _, n in ipairs(list) do if ungendered[n:upper()] then both[#both + 1] = id .. ":" .. n end end
@@ -345,6 +365,103 @@ do
   local ran = false
   hooks6["input.step"](function() ran = true end, {}, 1 / 60)
   check(ran, "input.step calls next")
+end
+
+-- Canon names from the shipped list
+local canon = lib.sets.set_canon
+check(canon and #canon.trainers >= 5, "canon trainer sections parsed (" .. #(canon and canon.trainers or {}) .. ")")
+local volty = false
+for _, n in ipairs(canon.species.RAICHU or {}) do volty = volty or n == "Volty" end
+check(volty, "Volty is a Raichu name too (family)")
+check(canon.species.MRMIME and #canon.species.MRMIME >= 3, "Mr. Mime trade names land on MR_MIME")
+local function has(list, want) for _, n in ipairs(list or {}) do if n == want then return true end end return false end
+check(has(canon.species.NIDORANM, "MrNIDO") and has(canon.species.NIDORANF, "MsNIDO"), "the reviewed Nidoran names land on each Nidoran")
+check(has(canon.species.LUGIA, "XD-One") and has(canon.species.DEOXYS, "EntityTwo"), "new Lugia and Deoxys sections parse")
+
+-- Trainer teams
+do
+  local cp = Core.combine(lib)
+  local function types() return {} end
+  local function team(name, seed, rows, mode)
+    return Core.trainerNames(cp, name, seed, rows, mode or "canon", "sometimes", types, "none")
+  end
+  local rb = { { species = "VOLTORB", level = 21 }, { species = "PIKACHU", level = 18 }, { species = "RAICHU", level = 24 } }
+  local n = team("LT.SURGE", "OPP_LT_SURGE|1", rb)
+  check(n[2] == "Volty" and n[1] == nil and n[3] == nil, "Red: Surge's Pikachu is Volty, the rest keep species names")
+  local y = team("LT.SURGE", "OPP_LT_SURGE|1", { { species = "RAICHU", level = 28 } })
+  check(y[1] == "Volty", "Yellow: Surge's Raichu is Volty")
+  local fr = team("LT. SURGE", "84|416", rb)
+  check(fr[2] == "Volty", "FireRed's spelling LT. SURGE matches")
+  local c = team("LT.SURGE", "LT_SURGE|LT_SURGE1", { { species = "RAICHU", level = 44 }, { species = "ELECTRODE", level = 40 } })
+  check(c[1] == "Volty" and c[2] == nil, "Crystal: Raichu is Volty")
+  local j = team("JASMINE", "JASMINE|JASMINE1", { { species = "MAGNEMITE" }, { species = "MAGNEMITE" }, { species = "STEELIX" } })
+  check(j[3] == "Rusty" and j[1] == nil, "Jasmine's Steelix is Rusty")
+  local st = team("STEVEN", "50|804", { { species = "SKARMORY" }, { species = "METAGROSS", level = 78 } })
+  check(st[2] == "Iron", "Steven's Metagross is Iron (Beldum's family)")
+  local red = team("RED", "RED|RED1", { { species = "PIKACHU" }, { species = "ESPEON" }, { species = "SNORLAX" },
+    { species = "VENUSAUR" }, { species = "CHARIZARD" }, { species = "BLASTOISE" } })
+  check(red[1] == "Pika" and red[2] == "Vee" and (red[3] == "Lax" or red[3] == "Snor") and red[4] == "Saur"
+    and red[5] == nil and red[6] == nil, "Red's team")
+  local red2 = team("RED", "RED|RED1", { { species = "PIKACHU" }, { species = "ESPEON" }, { species = "SNORLAX" } })
+  check(red2[3] == red[3], "Lax or Snor stays the same every battle")
+  check(next(team("YOUNGSTER", "OPP_YOUNGSTER|1", { { species = "RATTATA" } })) == nil, "CANON leaves other trainers alone")
+  local joey = { { species = "RATTATA", level = 4 }, { species = "PIDGEY", level = 5 }, { species = "RATTATA", level = 6 } }
+  local a1 = team("JOEY", "YOUNGSTER|JOEY1", joey, "all")
+  local a2 = team("JOEY", "YOUNGSTER|JOEY1", joey, "all")
+  check(a1[1] and a1[2] and a1[3], "ALL names every slot")
+  check(a1[1] == a2[1] and a1[2] == a2[2] and a1[3] == a2[3], "the same trainer gets the same names every battle")
+  check(a1[1] ~= a1[3], "no two the same in one party")
+  local other = team("JOEY", "YOUNGSTER|JOEY2", joey, "all")
+  check(other[1] ~= a1[1] or other[2] ~= a1[2], "a different trainer gets different names")
+  local fl = team("FLANNERY", "32|268", { { species = "SLUGMA", level = 24 }, { species = "MAGCARGO", level = 26 } })
+  check(fl[1] == "Meg" and fl[2] == "Mag", "Flannery: Slugma is Meg, Magcargo is Mag")
+  local flrs = team("FLANNERY", "32|268", { { species = "SLUGMA", level = 24 }, { species = "SLUGMA", level = 26 } })
+  check(flrs[1] == "Meg" and flrs[2] == "Mag", "Ruby: no Magcargo, so Mag goes to the other Slugma")
+  local br = team("BROCK", "OPP_BROCK|1", { { species = "GEODUDE", level = 12 }, { species = "ONIX", level = 14 } })
+  check(br[1] and br[1]:match("^Geo") and br[2] == nil, "Brock's Geodude gets one of his Geo names: " .. tostring(br[1]))
+  local wh = team("WHITNEY", "WHITNEY|WHITNEY1", { { species = "CLEFAIRY" }, { species = "MILTANK" } })
+  check(wh[1] == "Fafa", "Whitney's Clefairy is Fafa")
+  check(wh[2] == "MilMil", "Whitney's Miltank is MilMil")
+  local sa = team("LT.SURGE", "OPP_LT_SURGE|1", rb, "all")
+  check(sa[2] == "Volty" and sa[1] and sa[3] and sa[3] ~= "Volty", "ALL keeps the canon name and fills the rest")
+end
+
+-- Trainer teams through the hook, with a stand-in registry
+do
+  local regs = {
+    OPP_LT_SURGE = { name = "LT.SURGE" },
+    LT_SURGE = { name = "LEADER", trainers = { { id = "LT_SURGE1", name = "LT.SURGE" } } },
+    ["416"] = { name = "LT. SURGE" },
+  }
+  local function loadT(opts)
+    local m, h = load(opts, records)
+    m.content.trainers = { get = function(_, id) return regs[id] end }
+    return m, h
+  end
+  local _, ht = loadT({})
+  local shared = { { species = "VOLTORB", level = 21 }, { species = "PIKACHU", level = 18 }, { species = "RAICHU", level = 24 } }
+  local out = ht["trainer.party"](function(_, _, p) return p end, "OPP_LT_SURGE", 1, shared)
+  check(out ~= shared and out[2].nickname == "VOLTY" and out[1].nickname == nil, "Gen 1 ids: Pikachu named VOLTY in CAPS")
+  check(shared[2].nickname == nil, "the game's own party table is never changed")
+  local g2 = ht["trainer.party"](function(_, _, p) return p end, "LT_SURGE", "LT_SURGE1", { { species = "RAICHU", level = 44 } })
+  check(g2[1].nickname == "VOLTY", "Gen 2 ids: member id finds the trainer")
+  local g3 = ht["trainer.party"](function(_, _, p) return p end, 84, 416, { { species = "PIKACHU", level = 18 } })
+  check(g3[1].nickname == "VOLTY", "Gen 3 ids: trainer number finds the trainer")
+  local kept = ht["trainer.party"](function(_, _, p) return p end, "OPP_LT_SURGE", 1,
+    { { species = "PIKACHU", level = 18, nickname = "SPARKY" } })
+  check(kept[1].nickname == "SPARKY", "a row with a nickname keeps it")
+  local _, hoff = loadT({ trainers = "off" })
+  local same = { { species = "PIKACHU", level = 18 } }
+  check(hoff["trainer.party"](function(_, _, p) return p end, "OPP_LT_SURGE", 1, same) == same, "OFF passes the party through")
+  local _, hcanonoff = loadT({ set_canon = false })
+  check(hcanonoff["trainer.party"](function(_, _, p) return p end, "OPP_LT_SURGE", 1, same) == same, "CANON set off: no canon names")
+  local _, hall = loadT({ trainers = "all", case = "mixed" })
+  local joey = hall["trainer.party"](function(_, _, p) return p end, "OPP_YOUNGSTER", 1, { { species = "RATTATA", level = 4 } })
+  check(type(joey[1].nickname) == "string" and joey[1].nickname ~= joey[1].nickname:upper(), "ALL, Mixed: " .. tostring(joey[1].nickname))
+  local mt = { __index = { kind = "mon" } }
+  local withMt = setmetatable({ species = "PIKACHU", level = 18 }, mt)
+  local g2o = ht["trainer.party"](function(_, _, p) return p end, "OPP_LT_SURGE", 1, { withMt })
+  check(getmetatable(g2o[1]) == mt and g2o[1].kind == "mon", "copies keep a Gen 2 Pokémon's metatable")
 end
 
 -- No repeats across a long run while names remain

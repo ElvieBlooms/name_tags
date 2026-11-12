@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1.0
+
+Trainers' Pokémon get names too, and canon nicknames from the games, anime and manga join the mix.
+
+- New **TRAINER TEAMS** option. **CANON** (the default) gives trainers their canon names: Lt. Surge's Volty, Jasmine's Rusty, Erika's Angela, Whitney's Fafa and MilMil, Brock's Geo brothers and Hornlette, Red's Pika, Vee, Snor and Saur, Flannery's Meg and Mag, Wallace's four, and Steven's Iron. **ALL** names every trainer's Pokémon from your sets. **OFF** leaves them alone.
+- A trainer's names are the same every time you battle them.
+- New **CANON** set: nearly 300 nicknames from the games, anime and manga, for the species they belonged to and their families. Canon names skip the gender filter, since they're what a real Pokémon was called.
+- New **BAKED GOODS** set: breads, cakes, pastries, pies and cookies, and nothing fried or griddled, with its own type names (a Rock type might be Biscotti, an Ice type Meringue). It starts ON. Leave only it on for a bakery team.
+- Name files can name a trainer's own Pokémon with a `[trainer Name: SPECIES ...]` header.
+- Trainer names show in Gold, Silver and Crystal today. Red, Blue, Yellow and Gen 3 need a small engine change, suggested upstream. Until then nothing changes in those games.
+
 ## 1.0.0
 
 First release. Every Pokémon you catch gets a name of its own, picked at random from themed sets and matched to its gender.

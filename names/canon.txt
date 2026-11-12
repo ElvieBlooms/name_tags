@@ -1,0 +1,678 @@
+# Nicknames from the Pokémon games, anime and manga, each for its own species
+# and that species' evolution family, so Volty can turn up on any Pichu, Pikachu or Raichu.
+#
+# [trainer ...] sections name a battled trainer's own Pokémon after their canon name.
+# The first species after the colon is the one the name belongs to; the rest are its
+# family, used when the trainer has that Pokémon at another stage (Lt. Surge's Raichu).
+# Several names under one trainer section means one is picked for that trainer and kept.
+# One name per line, up to 10 letters. Letters only, with an inner hyphen allowed.
+
+[species ABRA KADABRA ALAKAZAM]
+Kazza
+
+[species AERODACTYL]
+Aeroy
+Aero
+
+[species AIPOM AMBIPOM]
+Aibo
+Ataro
+
+[species ARON LAIRON AGGRON]
+Ronar
+Lairin
+Rono
+
+[species AZURILL MARILL AZUMARILL]
+Marimaru
+Madam
+
+[species BALTOY CLAYDOL]
+Toybal
+
+[species BARBOACH WHISCASH]
+Boboach
+Phillip
+
+[species BASCULIN]
+Redeye
+Blueeye
+
+[species BELDUM METANG METAGROSS]
+Iron
+
+[species BELLSPROUT WEEPINBELL VICTREEBEL]
+Spoopy
+
+[species BONSLY SUDOWOODO]
+Twigs
+Sudobo
+Utaro
+
+[species BRONZOR BRONZONG]
+Bronzy
+
+[species BUDEW ROSELIA ROSERADE]
+Relia
+
+[species BUIZEL FLOATZEL]
+Zippy
+Zelhiko
+
+[species BULBASAUR IVYSAUR VENUSAUR]
+Saur
+Bruteroot
+
+[species CACNEA CACTURNE]
+Nacac
+
+[species CARVANHA SHARPEDO]
+Depos
+
+[species CASTFORM]
+Fofo
+Popo
+
+[species CATERPIE METAPOD BUTTERFREE]
+Happy
+Kitty
+Freesk
+
+[species CHARMANDER CHARMELEON CHARIZARD]
+Zippo
+Charla
+Charley
+Char
+
+[species CHATOT]
+Charap
+Chatler
+
+[species CHERUBI CHERRIM]
+Pit
+
+[species CHIKORITA BAYLEEF MEGANIUM]
+Megaree
+
+[species CHIMCHAR MONFERNO INFERNAPE]
+Chimler
+
+[species CLEFFA CLEFAIRY CLEFABLE]
+Cleffy
+Clefy
+Fafa
+
+[species CORSOLA]
+Coroso
+
+[species COSMOG COSMOEM SOLGALEO LUNALA]
+Nebby
+
+[species COTTONEE WHIMSICOTT]
+Fluffee
+
+[species CUBONE MAROWAK]
+Bonee
+
+[species CYNDAQUIL QUILAVA TYPHLOSION]
+Exbo
+Explotaro
+
+[species DEERLING SAWSBUCK]
+Jessica
+
+[species DEOXYS]
+EntityOne
+EntityTwo
+
+[species DIGLETT DUGTRIO]
+Gurio
+Dighiko
+
+[species DITTO]
+Ditty
+Mini-Dit
+
+[species DODUO DODRIO]
+Doris
+Duodo
+Dody
+Dodosk
+
+[species DRIFLOON DRIFBLIM]
+Loony
+
+[species DUSKULL DUSCLOPS DUSKNOIR]
+Kullusk
+
+[species EEVEE VAPOREON JOLTEON FLAREON ESPEON UMBREON LEAFEON GLACEON SYLVEON]
+Sandy
+Vee
+
+[species ELECTRIKE MANECTRIC]
+Rikelec
+
+[species FARFETCHD]
+Dux
+CHDING
+
+[species FEEBAS MILOTIC]
+Feefee
+Mimi
+
+[species GASTLY HAUNTER GENGAR]
+Gaspar
+Boo
+Rapooh
+
+[species GEODUDE GRAVELER GOLEM]
+Gravvy
+Geoone
+Geotwo
+Geothree
+Geofour
+Geofive
+Geosix
+Golosk
+
+[species GOLDEEN SEAKING]
+Golden
+Kingsea
+Goldy
+Charles
+
+[species GRIMER MUK]
+Sticky
+
+[species GROWLITHE ARCANINE]
+Growlie
+Archy
+
+[species GULPIN SWALOT]
+Gulin
+
+[species HAPPINY CHANSEY BLISSEY]
+Pinky
+Lucky-tchi
+
+[species HERACROSS]
+Heross
+
+[species HOOTHOOT NOCTOWL]
+Hoots
+
+[species HORSEA SEADRA KINGDRA]
+Seasor
+
+[species IGGLYBUFF JIGGLYPUFF WIGGLYTUFF]
+Jiggly
+BuffBuff
+
+[species JOLTIK GALVANTULA]
+Tula
+
+[species KANGASKHAN]
+Jumpy
+Kanga
+
+[species KECLEON]
+Kecon
+Reddy
+Greeny
+
+[species LAPRAS]
+Laprus
+Lapris
+Glacier
+LaPrus
+LaPris
+LaGlace
+
+[species LARVITAR PUPITAR TYRANITAR]
+Cruise
+
+[species LEDYBA LEDIAN]
+Bach
+
+[species LICKITUNG LICKILICKY]
+Marc
+Kit
+
+[species LOTAD LOMBRE LUDICOLO]
+Tado
+Lombe
+
+[species LUGIA]
+XD-One
+
+[species LUNATONE]
+Lunone
+
+[species LUVDISC]
+Luvis
+Caserin
+Luverin
+Elizabeth
+
+[species MACHOP MACHOKE MACHAMP]
+Ricky
+Muscle
+Muscles
+Chopam
+
+[species MAGIKARP GYARADOS]
+Foppa
+Karbag
+Rados
+Gyara
+
+[species MAGNEMITE MAGNETON MAGNEZONE]
+Maggie
+
+[species MAKUHITA HARIYAMA]
+Makit
+Mahita
+
+[species MANTYKE MANTINE]
+Tibo
+Mantaro
+
+[species MAREEP FLAAFFY AMPHAROS]
+Fluffy
+Amphy
+Sparkle
+
+[species MEOWTH PERSIAN]
+Meowow
+Meowzie
+
+[species MILTANK]
+MooMoo
+MilMil
+
+[species MIME_JR MR_MIME]
+Marcel
+Mtbes
+Mimien
+Moppet
+Mimey
+
+[species MIMIKYU]
+Mimikins
+
+[species MUDKIP MARSHTOMP SWAMPERT]
+Mumu
+Zuzu
+
+[species MUNCHLAX SNORLAX]
+Gorge
+Lax
+Snor
+
+[species MUNNA MUSHARNA]
+Musha
+
+[species NATU XATU]
+Paul
+Utan
+Xatee
+
+[species NIDORAN_F NIDORINA NIDOQUEEN]
+Terry
+Nino
+Maria
+Spot
+Nido
+Nidory
+MsNIDO
+
+[species NIDORAN_M NIDORINO NIDOKING]
+Spot
+Nido
+Tony
+MrNIDO
+
+[species NIHILEGO]
+Lillie
+
+[species NINCADA NINJASK SHEDINJA]
+Ninda
+Ninas
+
+[species NUMEL CAMERUPT]
+Lenum
+Erupam
+
+[species ODDISH GLOOM VILEPLUME BELLOSSOM]
+Plumile
+
+[species OMANYTE OMASTAR]
+Omny
+Omask
+
+[species ONIX STEELIX]
+Rusty
+Rocky
+Gem
+
+[species PARAS PARASECT]
+Spike
+Parasee
+
+[species PETILIL LILLIGANT]
+Lillil
+
+[species PHANPY DONPHAN]
+Phado
+Dono
+
+[species PICHU PIKACHU RAICHU]
+Volty
+Chupy
+Sparky
+Boss
+Pika
+Chuchu
+Puka
+Chuchino
+Pekachu
+
+[species PIDGEY PIDGEOTTO PIDGEOT]
+Orville
+
+[species PLUSLE]
+Pluses
+
+[species POLIWAG POLIWHIRL POLIWRATH POLITOED]
+Poli
+Polibo
+Poltaro
+
+[species PONYTA RAPIDASH]
+Runny
+Blaze
+
+[species POOCHYENA MIGHTYENA]
+Poochy
+Yena
+Nana
+
+[species PSYDUCK GOLDUCK]
+Dizzy
+Yellow
+
+[species RALTS KIRLIA GARDEVOIR GALLADE]
+Shedja
+Rara
+Ruru
+Kirly
+Kiruru
+
+[species RATTATA RATICATE]
+Ratty
+
+[species REGIGIGAS]
+Gi
+
+[species RHYHORN RHYDON RHYPERIOR]
+Hornlette
+Buffy
+Don
+
+[species ROTOM]
+Eeks
+
+[species RUFFLET BRAVIARY]
+Brav
+
+[species SANDSHREW SANDSLASH]
+Shrand
+
+[species SEEDOT NUZLEAF SHIFTRY]
+Dots
+Nuzzle
+
+[species SEEL DEWGONG]
+Satbor
+Cezanne
+Seelor
+
+[species SEVIPER]
+Vipes
+
+[species SHIELDON BASTIODON]
+Rampy
+Don
+
+[species SHINX LUXIO LUXRAY]
+Flick
+Rayhiko
+
+[species SHROOMISH BRELOOM]
+Smish
+
+[species SHUPPET BANETTE]
+Gon-chan
+
+[species SKARMORY]
+Corpy
+
+[species SKITTY DELCATTY]
+Skitet
+Catted
+Kiki
+Coco
+Sapphire
+
+[species SLAKOTH VIGOROTH SLAKING]
+Slokth
+Sling
+
+[species SLUGMA MAGCARGO]
+Meg
+Mag
+
+[species SMEARGLE]
+Smea-Smea
+
+[species SMOOCHUM JYNX]
+Lola
+Zynx
+Chumee
+
+[species SPEAROW FEAROW]
+Speary
+Kenya
+
+[species SPHEAL SEALEO WALREIN]
+Richard
+
+[species SPINDA]
+Spinin
+
+[species SQUIRTLE WARTORTLE BLASTOISE]
+Blasty
+Shellshock
+
+[species STANTLER]
+Antch
+
+[species STUNKY SKUNTANK]
+Stinky
+Honey
+
+[species SUNKERN SUNFLORA]
+Sunbo
+Sintaro
+
+[species SWABLU ALTARIA]
+Swaby
+Taria
+
+[species SWINUB PILOSWINE MAMOSWINE]
+Moo
+Su
+Ein
+Ub
+
+[species TAILLOW SWELLOW]
+Tatay
+Welow
+Rose
+
+[species TANGELA TANGROWTH]
+Crinkles
+Tangeny
+Angela
+
+[species TAUROS]
+Tauhiko
+
+[species TEPIG PIGNITE EMBOAR]
+Tep
+Nite
+Bo
+Gigi
+
+[species TERAPAGOS]
+Pagogo
+
+[species TIRTOUGA CARRACOSTA]
+Goura
+
+[species TOGEPI TOGETIC TOGEKISS]
+Togebo
+
+[species TORCHIC COMBUSKEN BLAZIKEN]
+Chic
+Toro
+
+[species TRAPINCH VIBRAVA FLYGON]
+Pinchin
+
+[species TROPIUS]
+Troppy
+Pilo
+
+[species TURTWIG GROTLE TORTERRA]
+Tru
+
+[species TYROGUE HITMONLEE HITMONCHAN HITMONTOP]
+Monlee
+
+[species VOLTORB ELECTRODE]
+Doris
+Volty
+Esphere
+Billy
+Rodlect
+
+[species VULPIX NINETALES]
+Snowy
+
+[species WAILMER WAILORD]
+Merail
+
+[species WHISMUR LOUDRED EXPLOUD]
+Whiris
+Louderd
+
+[species WINGULL PELIPPER]
+Peeko
+Gulwee
+Pelipe
+
+[species WURMPLE SILCOON BEAUTIFLY CASCOON DUSTOX]
+Dusty
+Tifly
+
+[species WYNAUT WOBBUFFET]
+Wobet
+
+[species ZIGZAGOON LINOONE]
+Zigoon
+Noone
+Tokin
+
+[species ZUBAT GOLBAT CROBAT]
+Zutzu
+Batty
+Mimi
+
+# ------- battled trainers
+
+[trainer Brock: GEODUDE GRAVELER GOLEM]
+Geoone
+Geotwo
+Geothree
+Geofour
+Geofive
+Geosix
+
+[trainer Brock: RHYHORN RHYDON RHYPERIOR]
+Hornlette
+
+[trainer Erika: TANGELA TANGROWTH]
+Angela
+
+[trainer Flannery: MAGCARGO SLUGMA]
+Mag
+
+[trainer Flannery: SLUGMA MAGCARGO]
+Meg
+
+[trainer Jasmine: AMPHAROS MAREEP FLAAFFY]
+Amphy
+Sparkle
+
+[trainer Jasmine: STEELIX ONIX]
+Rusty
+
+[trainer Lt. Surge: PIKACHU PICHU RAICHU]
+Volty
+
+[trainer Red: AERODACTYL]
+Aero
+
+[trainer Red: ESPEON EEVEE VAPOREON JOLTEON FLAREON UMBREON LEAFEON GLACEON SYLVEON]
+Vee
+
+[trainer Red: GYARADOS MAGIKARP]
+Gyara
+
+[trainer Red: PIKACHU PICHU RAICHU]
+Pika
+
+[trainer Red: POLIWRATH POLIWAG POLIWHIRL POLITOED]
+Poli
+
+[trainer Red: SNORLAX MUNCHLAX]
+Lax
+Snor
+
+[trainer Red: VENUSAUR BULBASAUR IVYSAUR]
+Saur
+
+[trainer Steven: BELDUM METANG METAGROSS]
+Iron
+
+[trainer Wallace: LUVDISC]
+Elizabeth
+
+[trainer Wallace: SEAKING GOLDEEN]
+Charles
+
+[trainer Wallace: SEALEO SPHEAL WALREIN]
+Richard
+
+[trainer Wallace: WHISCASH BARBOACH]
+Phillip
+
+[trainer Whitney: CLEFFA CLEFAIRY CLEFABLE]
+Fafa
+
+[trainer Whitney: SMEARGLE]
+Smea-Smea
+
+[trainer Whitney: MILTANK]
+MilMil
