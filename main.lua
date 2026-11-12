@@ -67,7 +67,7 @@ local GENDER_HEADERS = { male = "male", female = "female", neutral = "neutral",
 
 local function newSet()
   return { all = {}, types = {}, species = {}, seen = {}, count = 0, defaultOn = true,
-    gender = { male = {}, female = {}, neutral = {} } }
+    gender = { male = {}, female = {}, neutral = {} }, trainers = {} }
 end
 
 local function addName(set, list, name)
@@ -106,6 +106,18 @@ local function parseList(lib, text, fileName, setId)
         targets[1] = set.all
       elseif kind and GENDER_HEADERS[kind] and rest == "" then
         targets[1] = set.gender[GENDER_HEADERS[kind]]
+      elseif kind == "trainer" then
+        -- [trainer Lt. Surge: PIKACHU PICHU RAICHU]: a battled trainer's own
+        -- Pokémon. The first species is the one the name belongs to.
+        local who, ids = rest:match("^(.-)%s*:%s*(.+)$")
+        if who and who ~= "" then
+          local entry = { trainer = who, key = speciesKey(who), species = {}, names = {} }
+          for id in ids:gmatch("[^%s,]+") do entry.species[#entry.species + 1] = speciesKey(id) end
+          if #entry.species > 0 then
+            set.trainers[#set.trainers + 1] = entry
+            targets[1] = entry.names
+          end
+        end
       elseif kind == "type" or kind == "species" then
         local bucket = kind == "type" and set.types or set.species
         for id in rest:gmatch("[^%s,]+") do
@@ -132,7 +144,7 @@ end
 -- The switched-on sets merged into one set of pools.
 local function combine(lib, enabled)
   local pools = { all = {}, types = {}, species = {},
-    gender = { male = {}, female = {}, neutral = {} } }
+    gender = { male = {}, female = {}, neutral = {} }, trainers = {} }
   local function append(into, list)
     for _, name in ipairs(list) do into[#into + 1] = name end
   end
@@ -140,6 +152,7 @@ local function combine(lib, enabled)
     if enabled == nil or enabled(setId) then
       local set = lib.sets[setId]
       append(pools.all, set.all)
+      append(pools.trainers, set.trainers)
       for g, list in pairs(set.gender) do append(pools.gender[g], list) end
       for key, list in pairs(set.types) do
         pools.types[key] = pools.types[key] or {}
@@ -269,6 +282,82 @@ local function genderOf(species, mon)
   return nil
 end
 
+-- A repeatable random stream from a string, so a trainer's team gets the
+-- same names every time you battle them. Plain arithmetic: no bit library.
+local function seededRand(seed)
+  local state = 7
+  for i = 1, #seed do state = (state * 31 + seed:byte(i)) % 2147483647 end
+  if state == 0 then state = 1 end
+  return function()
+    state = (state * 48271) % 2147483647
+    return state / 2147483647
+  end
+end
+
+-- Names for a trainer's party, by slot (nil keeps the species name).
+-- Canon names come first: an entry for this trainer names the slot holding
+-- its exact species, or failing that the highest-level member of its family,
+-- and each entry names one slot. With mode "all" the other slots get names
+-- from the switched-on sets, never two the same in one party.
+local function trainerNames(pools, trainerName, seed, rows, mode, themed, typesOf, gender)
+  local names, used = {}, {}
+  local tkey = trainerName and speciesKey(trainerName)
+  if tkey and tkey ~= "" then
+    local mine = {}
+    for _, entry in ipairs(pools.trainers or {}) do
+      if entry.key == tkey and #entry.names > 0 then mine[#mine + 1] = entry end
+    end
+    local function give(slot, entry)
+      local r = seededRand(seed .. "|canon|" .. entry.species[1])
+      local name = entry.names[math.floor(r() * #entry.names) + 1]
+      names[slot] = name
+      used[name:upper()] = true
+      entry = nil
+    end
+    -- exact species first, for every entry, so a family fallback never takes
+    -- a slot another entry names exactly (Flannery's Slugma and Magcargo)
+    local done = {}
+    for e, entry in ipairs(mine) do
+      for i, row in ipairs(rows) do
+        if not names[i] and speciesKey(row.species) == entry.species[1] then
+          give(i, entry); done[e] = true
+          break
+        end
+      end
+    end
+    for e, entry in ipairs(mine) do
+      if not done[e] then
+        local slot
+        for i, row in ipairs(rows) do
+          if not names[i] then
+            local key = speciesKey(row.species)
+            for j = 2, #entry.species do
+              if key == entry.species[j]
+                  and (not slot or (tonumber(row.level) or 0) > (tonumber(rows[slot].level) or 0)) then
+                slot = i
+              end
+            end
+          end
+        end
+        if slot then give(slot, entry) end
+      end
+    end
+  end
+  if mode == "all" then
+    for i, row in ipairs(rows) do
+      if not names[i] then
+        local r = seededRand(seed .. "|" .. i .. "|" .. tostring(row.species))
+        local name = pickName(pools, row.species, typesOf(row.species, row), used, themed, r, gender)
+        if name then
+          names[i] = name
+          used[name:upper()] = true
+        end
+      end
+    end
+  end
+  return names
+end
+
 local function applyCase(name, case)
   if case == "mixed" then return name end
   return name:upper()
@@ -297,6 +386,7 @@ local Core = {
   validName = validName, namesInUse = namesInUse, pickName = pickName,
   applyCase = applyCase, isUnnamed = isUnnamed, setOption = setOption,
   genderOf = genderOf, gen1Gender = gen1Gender,
+  trainerNames = trainerNames, seededRand = seededRand,
   speciesKey = speciesKey, typeKey = typeKey, MAX_LEN = MAX_LEN,
 }
 
@@ -321,6 +411,8 @@ return function(mod)
     { key = "gender", type = "toggle", label = "MATCH GENDER", default = true },
     { key = "question", type = "choice", label = "NICKNAME QUESTION", default = "no",
       choices = { { "ANSWER NO", "no" }, { "ASK ME", "ask" } } },
+    { key = "trainers", type = "choice", label = "TRAINER TEAMS", default = "canon",
+      choices = { { "CANON", "canon" }, { "ALL", "all" }, { "OFF", "off" } } },
   }
   local lib = newLibrary()
   local setKeys = {}
@@ -507,6 +599,67 @@ return function(mod)
       armQuestion(mon, name)
     end
   end, -100)
+
+  -- The name of the trainer about to battle, from the trainers registry.
+  -- Gen 1 passes the class id and party number (OPP_LT_SURGE, 1), Gen 2 the
+  -- class and member ids (LT_SURGE, LT_SURGE1), Gen 3 the class and trainer
+  -- numbers (84, 416), and the Gen 3 registry is keyed by "416".
+  local function trainerNameOf(cls, idx)
+    local ok, name = pcall(function()
+      local trainers = mod.content.trainers
+      if type(idx) == "number" and type(cls) ~= "string" then
+        local rec = trainers:get(tostring(idx))
+        return rec and rec.name
+      end
+      local rec = trainers:get(cls)
+      if type(rec) ~= "table" then return nil end
+      if type(idx) == "string" then
+        for _, row in ipairs(rec.trainers or {}) do
+          if row.id == idx then return row.name end
+        end
+        return nil
+      end
+      local personal = rec.partyNames and rec.partyNames[idx]
+      if type(personal) == "string" and personal ~= "" then return personal end
+      return rec.name
+    end)
+    return ok and type(name) == "string" and name or nil
+  end
+
+  -- Trainers' Pokémon. The party comes back as copies with a nickname on
+  -- them, so the game's own trainer data is never changed. A row that
+  -- already has a nickname (another mod's, or a link partner's) keeps it.
+  -- Gold, Silver and Crystal show these names today; Red, Blue, Yellow and
+  -- the Gen 3 games need the engine to carry a party row's nickname into the
+  -- battle (see the README).
+  mod.hooks:wrap("trainer.party", function(nextHook, cls, idx, party)
+    local rows = nextHook(cls, idx, party)
+    local mode = mod.options:get("trainers")
+    if mode == "off" or type(rows) ~= "table" or #rows == 0 then return rows end
+    local gender = mod.options:get("gender") ~= false and "none" or nil
+    local names = trainerNames(pools(), trainerNameOf(cls, idx), tostring(cls) .. "|" .. tostring(idx),
+      rows, mode, mod.options:get("themed"), typesOf, gender)
+    local any = false
+    for _ in pairs(names) do any = true break end
+    if not any then return rows end
+    local case = mod.options:get("case")
+    local out = {}
+    for i, row in ipairs(rows) do
+      if type(row) == "table" then
+        local copy = {}
+        for k, v in pairs(row) do copy[k] = v end
+        local mt = getmetatable(row)
+        if mt then setmetatable(copy, mt) end
+        if names[i] and (row.nickname == nil or row.nickname == "") then
+          copy.nickname = applyCase(names[i], case)
+        end
+        out[i] = copy
+      else
+        out[i] = row
+      end
+    end
+    return out
+  end)
 
   -- Gifts: starters, Eevee, fossils, Lapras and the rest (Gen 1 and Gen 3).
   -- Runs late so a mod that swaps the gift's species has already done so.
