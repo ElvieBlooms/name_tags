@@ -36,11 +36,11 @@ A name goes to the exact species first, and otherwise to the nearest member of i
 
 **ALL** also names every other trainer's Pokémon from your switched-on sets. Each trainer's team gets the same names every time, so Youngster Joey's Rattata keeps its name on a rematch. **OFF** leaves trainers' Pokémon alone.
 
-**Where this works today:** Gold, Silver and Crystal. Red, Blue, Yellow and the Gen 3 games need a small engine change before the names show in battle. It's been suggested upstream, and Name Tags picks it up with no update once it's in.
+**Where this works:** every game. Red, Blue, Yellow and the Gen 3 games need engine 0.4.4 or newer; on older engines they keep the species names.
 
 ## Achievements
 
-With [Recomp Achievements](https://github.com/ElvieBlooms/recomp_achievements) installed, Name Tags adds 14 achievements under its own **NAME TAGS** tab in the TROPHIES menu. They count toward Extra Credit, not the main leaderboard. Without Recomp Achievements, nothing changes.
+With [Recomp Achievements](https://github.com/ElvieBlooms/recomp_achievements) installed, Name Tags adds 21 achievements under its own **NAME TAGS** tab in the TROPHIES menu. They count toward Extra Credit, not the main leaderboard. Without Recomp Achievements, nothing changes.
 
 **Catches** (every game)
 
@@ -56,17 +56,28 @@ With [Recomp Achievements](https://github.com/ElvieBlooms/recomp_achievements) i
 | Six of a Kind | A full party of six, every one named from the same set | 10 |
 | Pop Quiz (hidden) | A catch gets a **POP CULTURE** or **MEMES** name | 2 |
 
-**Trainers** (Gold, Silver and Crystal)
+**Trainers**
 
-| Achievement | How | Points |
-|---|---|---|
-| Name Recognition | Face 10 trainer Pokémon that carry a canon name | 5 |
-| Lightning Rod | Battle Lt. Surge while Volty is out | 3 |
-| Pika, Vee, Snor and Saur (hidden) | Face all four of Red's named Pokémon in one battle | 15 |
-| Fafa and MilMil | Face both of Whitney's named Pokémon in one battle | 3 |
-| Hometown Heroes | Face the canon-named Pokémon of five different trainers | 10 |
+Each one only appears in the games where that trainer battles you with a named Pokémon.
 
-A trainer's Pokémon counts once it's out against you. The trainer achievements only appear in Gold, Silver and Crystal for now, since those are the games that show trainers' names today. They'll come to the other games in a later update.
+| Achievement | How | Points | Games |
+|---|---|---|---|
+| Lightning Rod | Battle Lt. Surge while Volty is out | 3 | Kanto games, Gold, Silver, Crystal |
+| Rock Solid | Battle Brock while one of his named Pokémon is out | 3 | Kanto games, Gold, Silver, Crystal |
+| Tangled Up | Battle Erika while Angela is out | 3 | Kanto games, Gold, Silver, Crystal |
+| Kanto Classics | Face the named Pokémon of Brock, Lt. Surge and Erika | 10 | Kanto games, Gold, Silver, Crystal |
+| Fafa and MilMil | Face both of Whitney's named Pokémon in one battle | 3 | Gold, Silver, Crystal |
+| Pika, Vee, Snor and Saur (hidden) | Face all four of Red's named Pokémon in one battle | 15 | Gold, Silver, Crystal |
+| Name Recognition | Face 10 trainer Pokémon that carry a canon name | 5 | Gold, Silver, Crystal |
+| Hometown Heroes | Face the canon-named Pokémon of five different trainers | 10 | Gold, Silver, Crystal |
+| Hot Spring | Battle Flannery while one of her named Pokémon is out | 3 | Ruby, Sapphire, Emerald |
+| Royal Court | Face every one of Wallace's named Pokémon in one battle | 5 | Ruby, Sapphire, Emerald |
+| Iron Will | Battle Steven while Iron is out | 5 | Ruby, Sapphire, Emerald |
+| Hoenn Headliners | Face the named Pokémon of Flannery, Wallace and Steven | 10 | Ruby, Sapphire, Emerald |
+
+The Kanto games are Red, Blue, Yellow, FireRed and LeafGreen. A trainer's Pokémon counts once it's out against you. Wallace has four named Pokémon in Ruby and Sapphire, and one (Phillip) in Emerald. Name Recognition and Hometown Heroes stay in Gold, Silver and Crystal, the only games with enough named trainers to reach them.
+
+Red, Blue, Yellow and the Gen 3 games need engine 0.4.4 or newer to show trainers' names, and so to count these.
 
 ## Options
 

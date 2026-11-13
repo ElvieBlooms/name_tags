@@ -491,14 +491,20 @@ for _, d in ipairs(Core.ACHIEVEMENTS) do
   for _, g in ipairs(d.games or {}) do ok = ok and VERSIONS[g] == 1 end
   if not ok then defsOk = false; print("  bad definition " .. tostring(d.id)) end
   ids[d.id] = true
+  local GSC, KANTO = "gold,silver,crystal", "red,blue,yellow,gold,silver,crystal,firered,leafgreen"
+  local HOENN = "ruby,sapphire,emerald"
+  local want = { name_recognition = GSC, hometown_heroes = GSC, red_four = GSC, fafa_milmil = GSC,
+    lightning_rod = KANTO, rock_solid = KANTO, tangled_up = KANTO, kanto_classics = KANTO,
+    hot_spring = HOENN, royal_court = HOENN, iron_will = HOENN, hoenn_headliners = HOENN }
   if d.category == "TRAINERS" then
-    trainerOk = trainerOk and d.games and table.concat(d.games, ",") == "gold,silver,crystal"
+    local got = d.games and table.concat(d.games, ",")
+    if got ~= want[d.id] then trainerOk = false; print("  games for " .. d.id .. ": " .. tostring(got)) end
   else
     trainerOk = trainerOk and d.games == nil
   end
 end
-check(#Core.ACHIEVEMENTS == 14 and defsOk, "14 achievement definitions, all within the framework's limits")
-check(trainerOk, "trainer achievements are Gold, Silver and Crystal only; catch ones are every game")
+check(#Core.ACHIEVEMENTS == 21 and defsOk, "21 achievement definitions, all within the framework's limits")
+check(trainerOk, "each trainer achievement is in the games where that trainer has named Pokemon; catch ones are every game")
 
 local index = Core.setIndex(lib)
 local allOn = function() return true end
@@ -592,7 +598,7 @@ local fw, m3, hk3, ev3 = withAchievements("crystal", {})
 check(fw.tab == "NAME TAGS", "connects with its own NAME TAGS tab")
 local defCount = 0
 for _ in pairs(fw.defs) do defCount = defCount + 1 end
-check(defCount == 14, "registers all 14")
+check(defCount == 21, "registers all 21")
 ev3["pokemon.caught"].fn({ mon = { species = "UMBREON", name = "UMBREON", types = { "DARK" } }, species = "UMBREON", game = game })
 check(fw.unlocked.first_name and fw.progress.roll_call == 1 and fw.progress.name_badges == 1, "a named catch: Hello, My Name Is, and both counters")
 hk3["catch.nickname"](function() return true end, { species = "NINETALES" }, { game = game })
@@ -635,7 +641,9 @@ local function trainersFor(game)
       local t = { LT_SURGE = { trainers = { { id = "LT_SURGE1", name = "LT.SURGE" } } },
         RED = { trainers = { { id = "RED1", name = "RED" } } },
         WHITNEY = { trainers = { { id = "WHITNEY1", name = "WHITNEY" } } },
-        OPP_LT_SURGE = { name = "LT.SURGE" } }
+        OPP_LT_SURGE = { name = "LT.SURGE" }, OPP_BROCK = { name = "BROCK" }, OPP_ERIKA = { name = "ERIKA" },
+        ["268"] = { name = "FLANNERY" }, ["272"] = { name = "WALLACE" }, ["335"] = { name = game == "emerald" and "WALLACE" or "STEVEN" },
+        ["804"] = { name = "STEVEN" } }
       return t[id]
     end }
   end
@@ -702,13 +710,70 @@ do
   check(fwM.unlocked.lightning_rod, "and Lightning Rod still counts on Mixed")
 end
 
--- Red (the game): trainer names don't show there yet, so nothing is counted
+-- Red (the game), Gen 1's shape: battlers with .mon, and the foe's
+-- send-outs through battler_switched with battler == battle.enemy
 local fwR, hkR, evR, storeR = trainerRun("red")
-local out = hkR["trainer.party"](function() return { { species = "PIKACHU", level = 21 } } end, "OPP_LT_SURGE", 1, nil)
-evR["battle.started"].fn({ battle = { enemy = { mon = out[1] } }, kind = "trainer" })
-evR["battle.turn_started"].fn({ battle = { enemy = { mon = out[1] } }, turn = 2 })
-check(not fwR.unlocked.lightning_rod and fwR.progress.name_recognition == nil and storeR.heroes == nil,
-  "in Red the trainer achievements aren't counted, even with the name on the row")
+local function gen1Fight(cls, rows, order)
+  local out = hkR["trainer.party"](function() return rows end, cls, 1, nil)
+  local b = { enemy = { mon = out[order[1]] }, player = { mon = { nickname = "VOLTY" } } }
+  evR["battle.started"].fn({ battle = b, kind = "trainer" })
+  evR["battle.battler_switched"].fn({ battle = b, battler = b.player })
+  for i = 2, #order do
+    b.enemy = { mon = out[order[i]] }
+    evR["battle.battler_switched"].fn({ battle = b, battler = b.enemy })
+  end
+  evR["battle.ended"].fn({ battle = b, result = "win" })
+end
+gen1Fight("OPP_LT_SURGE", { { species = "VOLTORB" }, { species = "PIKACHU" }, { species = "RAICHU" } }, { 1 })
+check(not fwR.unlocked.lightning_rod, "in Red, your own Volty coming in doesn't count for Lightning Rod")
+gen1Fight("OPP_LT_SURGE", { { species = "VOLTORB" }, { species = "PIKACHU" }, { species = "RAICHU" } }, { 1, 2, 3 })
+check(fwR.unlocked.lightning_rod and fwR.progress.kanto_classics == 1, "in Red, Surge's Volty: Lightning Rod and one of Kanto Classics")
+check(fwR.progress.name_recognition == nil and fwR.progress.hometown_heroes == nil,
+  "Name Recognition and Hometown Heroes stay Gold, Silver and Crystal only")
+gen1Fight("OPP_BROCK", { { species = "GEODUDE" }, { species = "ONIX" } }, { 1, 2 })
+check(fwR.unlocked.rock_solid, "Brock's Geo: Rock Solid")
+check(not fwR.unlocked.kanto_classics, "two leaders isn't Kanto Classics yet")
+gen1Fight("OPP_ERIKA", { { species = "VICTREEBEL" }, { species = "TANGELA" }, { species = "VILEPLUME" } }, { 1, 2 })
+check(fwR.unlocked.tangled_up and fwR.unlocked.kanto_classics and storeR.heroes.ERIKA, "Erika's Angela: Tangled Up and Kanto Classics")
+
+-- Gen 3's shape: the battle state with .enemy battlers, switches marked by side
+local function gen3Run(game)
+  local fw3, hk3b, ev3b = trainerRun(game)
+  local function fight3(tid, rows, order, playerSwitch)
+    local out = hk3b["trainer.party"](function() return rows end, tid, tonumber(tid), nil)
+    local st = { enemy = { side = "enemy", mon = out[order[1]] } }
+    ev3b["battle.started"].fn({ battle = st, kind = "trainer" })
+    if playerSwitch then
+      ev3b["battle.battler_switched"].fn({ battle = st, battler = { side = "player", mon = { nickname = "IRON" } }, sideName = "player" })
+    end
+    for i = 2, #order do
+      local nb = { side = "enemy", mon = out[order[i]] }
+      ev3b["battle.battler_switched"].fn({ battle = st, battler = nb, sideName = "enemy" })
+    end
+    ev3b["battle.ended"].fn({ battle = st, result = "win" })
+  end
+  return fw3, fight3
+end
+local fwRu, fightRu = gen3Run("ruby")
+fightRu("268", { { species = "SLUGMA" }, { species = "SLUGMA" }, { species = "TORKOAL" } }, { 1, 2, 3 })
+check(fwRu.unlocked.hot_spring, "Ruby: Flannery's Meg: Hot Spring")
+fightRu("272", { { species = "LUVDISC" }, { species = "WHISCASH" }, { species = "SEALEO" }, { species = "SEAKING" }, { species = "MILOTIC" } },
+  { 1, 2, 3, 5 })
+check(not fwRu.unlocked.royal_court, "three of Wallace's four isn't Royal Court")
+fightRu("272", { { species = "LUVDISC" }, { species = "WHISCASH" }, { species = "SEALEO" }, { species = "SEAKING" }, { species = "MILOTIC" } },
+  { 1, 2, 3, 4, 5 })
+check(fwRu.unlocked.royal_court, "all four of Wallace's: Royal Court")
+local steven = { { species = "SKARMORY" }, { species = "CLAYDOL" }, { species = "AGGRON" }, { species = "CRADILY" },
+  { species = "ARMALDO" }, { species = "METAGROSS" } }
+fightRu("335", steven, { 1, 2 }, true)
+check(not fwRu.unlocked.iron_will, "your own Iron coming in doesn't count")
+fightRu("335", steven, { 1, 2, 3, 4, 5, 6 })
+check(fwRu.unlocked.iron_will and fwRu.unlocked.hoenn_headliners, "Steven's Iron: Iron Will and Hoenn Headliners")
+check(fwRu.unlocked.lightning_rod == nil and fwRu.progress.kanto_classics == nil, "Kanto ones don't count in Ruby")
+local fwEm, fightEm = gen3Run("emerald")
+fightEm("335", { { species = "WAILORD" }, { species = "TENTACRUEL" }, { species = "LUDICOLO" }, { species = "WHISCASH" },
+  { species = "GYARADOS" }, { species = "MILOTIC" } }, { 1, 2, 3, 4 })
+check(fwEm.unlocked.royal_court, "Emerald: Wallace's one named Pokemon, Phillip, is enough for Royal Court")
 
 -- no framework, or a different major version: the mod runs as before
 local _, _, evN = load({}, records)

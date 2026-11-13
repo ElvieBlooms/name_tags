@@ -376,10 +376,12 @@ local function isUnnamed(mon, species)
   return key == speciesKey(species) or key == speciesKey(mon.name)
 end
 
--- Achievements for Recomp Achievements, when it's installed. The trainer
--- ones are Gold, Silver and Crystal only for now: those are the games that
--- show a trainer's Pokémon names today.
+-- Achievements for Recomp Achievements, when it's installed. Each trainer
+-- one is limited to the games where that trainer battles you with a named
+-- Pokémon. Red, Blue, Yellow and Gen 3 show the names from engine 0.4.4.
 local TRAINER_GAMES = { "gold", "silver", "crystal" }
+local KANTO_GAMES = { "red", "blue", "yellow", "gold", "silver", "crystal", "firered", "leafgreen" }
+local HOENN_GAMES = { "ruby", "sapphire", "emerald" }
 local ACHIEVEMENTS = {
   { id = "first_name", title = "Hello, My Name Is", points = 1, category = "CATCHES",
     description = "Name Tags names your first catch." },
@@ -402,8 +404,24 @@ local ACHIEVEMENTS = {
   { id = "name_recognition", title = "Name Recognition", points = 5, category = "TRAINERS",
     goal = 10, unit = "POKEMON", games = TRAINER_GAMES,
     description = "Face 10 trainer Pokemon that carry a canon name." },
-  { id = "lightning_rod", title = "Lightning Rod", points = 3, category = "TRAINERS", games = TRAINER_GAMES,
+  { id = "lightning_rod", title = "Lightning Rod", points = 3, category = "TRAINERS", games = KANTO_GAMES,
     description = "Battle Lt. Surge while Volty is out." },
+  { id = "rock_solid", title = "Rock Solid", points = 3, category = "TRAINERS", games = KANTO_GAMES,
+    description = "Battle Brock while one of his named Pokemon is out." },
+  { id = "tangled_up", title = "Tangled Up", points = 3, category = "TRAINERS", games = KANTO_GAMES,
+    description = "Battle Erika while Angela is out." },
+  { id = "kanto_classics", title = "Kanto Classics", points = 10, category = "TRAINERS",
+    goal = 3, unit = "LEADERS", games = KANTO_GAMES,
+    description = "Face the named Pokemon of Brock, Lt. Surge and Erika." },
+  { id = "hot_spring", title = "Hot Spring", points = 3, category = "TRAINERS", games = HOENN_GAMES,
+    description = "Battle Flannery while one of her named Pokemon is out." },
+  { id = "royal_court", title = "Royal Court", points = 5, category = "TRAINERS", games = HOENN_GAMES,
+    description = "Face every one of Wallace's named Pokemon in one battle." },
+  { id = "iron_will", title = "Iron Will", points = 5, category = "TRAINERS", games = HOENN_GAMES,
+    description = "Battle Steven while Iron is out." },
+  { id = "hoenn_headliners", title = "Hoenn Headliners", points = 10, category = "TRAINERS",
+    goal = 3, unit = "TRAINERS", games = HOENN_GAMES,
+    description = "Face the named Pokemon of Flannery, Wallace and Steven." },
   { id = "red_four", title = "Pika, Vee, Snor and Saur", points = 15, category = "TRAINERS",
     games = TRAINER_GAMES, hidden = true,
     description = "Face all four of Red's named Pokemon on Mt. Silver in one battle." },
@@ -474,8 +492,12 @@ end
 
 -- What one trainer battle has earned so far. team is { trainer = key,
 -- canon = { NAME = true } } as named in trainer.party; seen is the canon
--- names that have been out against you, in capitals.
-local TRAINER_TEAMS = { red_four = { "RED", 4 }, fafa_milmil = { "WHITNEY", 2 } }
+-- names that have been out against you, in capitals. ANY_NAMED earns as
+-- soon as one is out; ALL_NAMED needs every named one, and at least that
+-- many named on the team.
+local ANY_NAMED = { lightning_rod = "LTSURGE", rock_solid = "BROCK", tangled_up = "ERIKA",
+  hot_spring = "FLANNERY", iron_will = "STEVEN" }
+local ALL_NAMED = { red_four = { "RED", 4 }, fafa_milmil = { "WHITNEY", 2 }, royal_court = { "WALLACE", 1 } }
 local function trainerUnlocks(team, seen)
   local out = {}
   local count, total = 0, 0
@@ -483,11 +505,29 @@ local function trainerUnlocks(team, seen)
     total = total + 1
     if seen[n] then count = count + 1 end
   end
-  if team.trainer == "LTSURGE" and seen.VOLTY then out[#out + 1] = "lightning_rod" end
-  for id, want in pairs(TRAINER_TEAMS) do
+  for id, who in pairs(ANY_NAMED) do
+    if team.trainer == who and count > 0 then out[#out + 1] = id end
+  end
+  for id, want in pairs(ALL_NAMED) do
     if team.trainer == want[1] and total >= want[2] and count == total then out[#out + 1] = id end
   end
   table.sort(out)
+  return out
+end
+
+-- Progress toward the trainer-count achievements, from the trainers whose
+-- named Pokémon you've faced: any five for Hometown Heroes, and a region's
+-- three for its own.
+local REGIONS = { kanto_classics = { "BROCK", "LTSURGE", "ERIKA" },
+  hoenn_headliners = { "FLANNERY", "WALLACE", "STEVEN" } }
+local function heroProgress(heroes)
+  local out = { hometown_heroes = 0 }
+  for _ in pairs(heroes) do out.hometown_heroes = out.hometown_heroes + 1 end
+  for id, who in pairs(REGIONS) do
+    local n = 0
+    for _, key in ipairs(who) do if heroes[key] then n = n + 1 end end
+    out[id] = n
+  end
   return out
 end
 
@@ -506,8 +546,9 @@ local Core = {
   applyCase = applyCase, isUnnamed = isUnnamed, setOption = setOption,
   genderOf = genderOf, gen1Gender = gen1Gender,
   trainerNames = trainerNames, seededRand = seededRand,
-  ACHIEVEMENTS = ACHIEVEMENTS, TRAINER_GAMES = TRAINER_GAMES, setIndex = setIndex,
-  catchUnlocks = catchUnlocks, partyUnlocks = partyUnlocks, trainerUnlocks = trainerUnlocks,
+  ACHIEVEMENTS = ACHIEVEMENTS, TRAINER_GAMES = TRAINER_GAMES, KANTO_GAMES = KANTO_GAMES,
+  HOENN_GAMES = HOENN_GAMES, setIndex = setIndex, catchUnlocks = catchUnlocks,
+  partyUnlocks = partyUnlocks, trainerUnlocks = trainerUnlocks, heroProgress = heroProgress,
   speciesKey = speciesKey, typeKey = typeKey, MAX_LEN = MAX_LEN,
 }
 
@@ -858,11 +899,10 @@ return function(mod)
 
     mod.events:on(ach.events.ready, function() achieve.party() end)
 
-    -- Trainer battles, in the games that show trainers' names today. The
-    -- foe's Pokémon counts once it's out against you: the lead at
-    -- battle.started, and every one after it at battle.battler_switched.
-    local trainerGame = {}
-    for _, g in ipairs(TRAINER_GAMES) do trainerGame[g] = true end
+    -- Trainer battles. The foe's Pokémon counts once it's out against you:
+    -- the lead at battle.started, and every one after it at
+    -- battle.battler_switched. A game or engine that doesn't show the names
+    -- never matches, so nothing is counted there.
     local battle
     -- The foe's Pokémon on a battle: Gen 2's battle.started sends the battle
     -- screen, whose .battle holds it; the other events send the battle itself.
@@ -888,9 +928,9 @@ return function(mod)
         heroes[battle.team.trainer] = true
         mod.save:set("heroes", heroes)
       end
-      local count = 0
-      for _ in pairs(heroes) do count = count + 1 end
-      handle:setProgress("hometown_heroes", count)
+      for id, n in pairs(heroProgress(heroes)) do
+        if n > 0 then handle:setProgress(id, n) end
+      end
       for _, id in ipairs(trainerUnlocks(battle.team, battle.seen)) do unlock(id) end
     end
     -- Gold, Silver and Crystal send battle.started twice for one battle (the
@@ -901,17 +941,17 @@ return function(mod)
       lastTeam = nil
       achieve.party()
       if ev.kind ~= "trainer" then battle = nil return end
-      if team then
-        local okG, game = pcall(ach.currentGame)
-        battle = (okG and trainerGame[game]) and { team = team, seen = {} } or nil
-      end
+      if team then battle = { team = team, seen = {} } end
       look(ev.battle)
     end)
     mod.events:on("battle.turn_started", function(ev) look(ev.battle) end)
     mod.events:on("battle.battler_switched", function(ev)
       local b = ev.battle
-      -- only the foe's side: the player's own Volty walking in doesn't count
-      if type(b) == "table" and ev.battler ~= nil and ev.battler == b.enemy then
+      -- only the foe's side: the player's own Volty walking in doesn't count.
+      -- Gen 3 marks each battler's side, and a double battle has two foes out.
+      local foe = type(ev.battler) == "table"
+        and (ev.battler == (type(b) == "table" and b.enemy) or ev.battler.side == "enemy" or ev.sideName == "enemy")
+      if type(b) == "table" and foe then
         look(b, nicknameOf(ev.battler))
       end
     end)

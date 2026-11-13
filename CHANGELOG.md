@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.3.0
+
+Trainer achievements for Red, Blue, Yellow and the Gen 3 games, now that engine 0.4.4 shows trainers' names there.
+
+- Lightning Rod now counts in Red, Blue, Yellow, FireRed and LeafGreen too.
+- New for the Kanto games (and Gold, Silver and Crystal): **Rock Solid** (Brock), **Tangled Up** (Erika's Angela) and **Kanto Classics** (Brock, Lt. Surge and Erika).
+- New for Ruby, Sapphire and Emerald: **Hot Spring** (Flannery), **Royal Court** (all of Wallace's named Pokémon), **Iron Will** (Steven's Iron) and **Hoenn Headliners** (all three).
+- Name Recognition, Hometown Heroes, Fafa and MilMil, and Red's four stay in Gold, Silver and Crystal.
+- Gen 3's double battles count either foe Pokémon that's out.
+
 ## 1.2.0
 
 Achievements, for players with Recomp Achievements installed.
