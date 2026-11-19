@@ -1,6 +1,6 @@
 # Name Tags
 
-Every Pokémon you catch gets a name of its own, picked at random from themed sets: people, pets, food, baked goods, nature, myths, space, names that only suit a certain type or species, and canon nicknames from the games, anime and manga. Pop culture and meme names are there too, for when you want them. A Fire type might come out as **Cinder** or **Sriracha**, a Ninetales as **Kyubi**, a Pikachu as **Volty**, and a Ditto as **Frankie**.
+Every Pokémon you catch gets a name of its own, picked at random from themed sets: people, pets, food, baked goods, drinks, colors, feelings, nature, myths, space, names that only suit a certain type or species, and canon nicknames from the games, anime and manga. Pop culture and meme names are there too, for when you want them, and baby names made from the species name (Charmy, Abby, Ven-Ven). A Fire type might come out as **Cinder** or **Sriracha**, a Ninetales as **Kyubi**, a Pikachu as **Volty**, and a Ditto as **Frankie**.
 
 Trainers' Pokémon can have names too. Gym leaders and other trainers from the games, anime and manga bring their canon names into battle: Lt. Surge sends out **Volty**, Jasmine sends out **Rusty**, and Red on Mt. Silver sends out **Pika**.
 
@@ -12,8 +12,9 @@ Works in Red, Blue and Yellow, Gold, Silver and Crystal, and the Gen 3 games.
 
 ## What happens after a catch
 
-- **Gen 1:** no question. The Pokémon just has its name.
-- **Gen 2 and Gen 3:** the game still asks "Give a nickname to SIENNA?", and Name Tags answers NO for you. The question is up for about a second in Gold, Silver and Crystal, and about two in the Gen 3 games, where the text has to finish first. The engine doesn't yet let a mod skip that question in these games. Once it does, Name Tags skips it there too, with no update needed.
+No question. The game skips "Give a nickname?" and the Pokémon just has its name. If you'd rather be asked, set **NICKNAME QUESTION** to **ASK ME**.
+
+On engines older than 0.4.4, Gold, Silver, Crystal and the Gen 3 games still ask, and Name Tags answers NO for you. The question is up for a second or two.
 
 ## Trainers' Pokémon
 
@@ -86,17 +87,19 @@ Set these in the mod manager.
 - **CATCHES**: **AUTO** names every catch. **ASK** leaves catches to the game, the way it is without the mod.
 - **GIFTS**: starters, Eevee, Lapras, fossils and the other gifts. **ASK** by default, so the Pokémon you're handed at the start is still yours to name. **AUTO** names them too. That's tested in Gen 1. Gen 3 gifts take the name, but their own nickname question may still appear, and Gen 2 gifts aren't named yet.
 - **LETTERS**: **CAPS** (MABEL) matches the game's own names. **Mixed** (Mabel) writes them as people do.
-- **THEMED NAMES**: how often a type or species name is picked over a general one, when one fits. **SOMETIMES** is about two catches in five, **OFTEN** about three in four.
+- **THEMED NAMES**: how often a species, baby, nature or type name is picked over a general one, when one fits. **SOMETIMES** is about two catches in five, **OFTEN** about three in four. Baby and nature names add a little on top when they're on.
 - **MATCH GENDER**: **ON** keeps male, female and neutral names to Pokémon of that gender. **OFF** lets any name go to any Pokémon.
-- **NICKNAME QUESTION** (Gen 2 and Gen 3): **ANSWER NO** lets Name Tags answer for you. **ASK ME** leaves the question up, so you can press YES and pick your own name.
+- **NICKNAME QUESTION** (Gen 2 and Gen 3): **ANSWER NO** skips the question. **ASK ME** shows it with the new name already on, "Give a nickname to SIENNA?", so NO keeps it and YES lets you pick your own.
 - **TRAINER TEAMS**: **CANON** gives canon trainers' Pokémon their names, **ALL** names every trainer's Pokémon, **OFF** leaves them alone. See above.
-- One row per set: **BAKED GOODS**, **CANON**, **FOOD**, **MEMES**, **MYTHS**, **NATURE**, **PEOPLE**, **PETS**, **POP CULTURE**, **SPACE**, **SPECIES**, **TYPES**. Switching **CANON** off also stops the canon trainer names. All start **ON** except **MEMES** and **POP CULTURE**, which start **OFF**, since they aren't the everyday names the rest stick to. Leave only **FOOD** on for a team of snacks, or only **BAKED GOODS** for a bakery.
+- One row per set: **BABY NAMES**, **BAKED GOODS**, **CANON**, **COLORS**, **DRINKS**, **FEELINGS**, **FOOD**, **MEMES**, **MYTHS**, **NATURE**, **PEOPLE**, **PETS**, **POP CULTURE**, **SPACE**, **SPECIES**, **TYPES**. Switching **CANON** off also stops the canon trainer names. All start **ON** except **BABY NAMES**, **MEMES** and **POP CULTURE**, which start **OFF**, since they aren't the everyday names the rest stick to. Leave only **FOOD** on for a team of snacks, only **BAKED GOODS** for a bakery, or only **BABY NAMES** for a nursery.
 
 ## How names are picked
 
 - A name already worn by a Pokémon in your party, your boxes or the Day-Care isn't picked again. Only once every name is taken does it allow repeats.
 - Every name has the same chance, so a bigger set comes up more often than a small one.
 - A dual-type Pokémon can draw from both types' names. Some sets have their own type names too: the Food set gives Fire types Chili or Jalapeno, and Water types Sushi or Chowder. Baked Goods gives Ice types Meringue or Pavlova, and Rock types Biscotti or Rock-Cake.
+- **Baby names** are made from the start of the species name and a little ending: a Charmander can be Charmy, Charoo or Char-Char, an Abra Abby, a Squirtle Squirty. They come up as a themed name, like the type names, so with other sets on they're a treat rather than every catch.
+- **Natures:** in Ruby, Sapphire, Emerald, FireRed and LeafGreen, the **FEELINGS** set has names for each nature, so a Timid catch might be Shy and a Brave one Valiant. Gen 1 and Gen 2 have no natures, so there they get the general feelings names.
 - **Gender:** Gold, Silver, Crystal and the Gen 3 games say what each Pokémon is. Gen 1 has no gender, so Name Tags works it out the way Gold, Silver and Crystal do for a Pokémon traded forward, from its Attack DV and species. That's the same rule as the Gen 1 Gender mod, so the name always matches the symbol it draws. A gift is named before the game has made the Pokémon, so a gift can get any name.
 - A name that's male or female in People or Myths is kept out of the other sets, so a female Pokémon is never named Rufus from the pet list. Canon names are the exception: they're what a real Pokémon was called, so a Nidorino can still be Tony.
 - In-game trades keep the names they come with. If another mod has already named a catch, Name Tags leaves it alone.
@@ -106,11 +109,12 @@ Set these in the mod manager.
 
 - **Names are up to 10 letters,** the same as the naming screen in all three generations. The engine clips a catch's nickname to 10 itself, because the party, summary and battle boxes have no room for more.
 - Letters only, with a hyphen allowed inside a name (Mary-Jo). Every generation's font draws those.
+- A full party of baby names doesn't count toward Six of a Kind, since those names aren't a fixed list.
 - Gen 2 gifts still ask, as the game has no place for a mod to name them first. Gen 3 gifts haven't been played through yet.
 
 ## Adding names and sets
 
-The lists are plain text in `names/`, one name per line. Each file is a set with its own ON/OFF row, named after the file: add `colours.txt` and a **COLOURS** row appears. Put `#! default off` on its own line to have a set start switched off.
+The lists are plain text in `names/`, one name per line. Each file is a set with its own ON/OFF row, named after the file: add `birds.txt` and a **BIRDS** row appears. Put `#! default off` on its own line to have a set start switched off.
 
 ```
 # a note
@@ -132,12 +136,17 @@ Cinder
 [species NINETALES VULPIX]
 Kyubi
 
+[nature TIMID]
+Shy
+
 [trainer Lt. Surge: PIKACHU PICHU RAICHU]
 Volty
 ```
 
 - **[male]**, **[female]** and **[neutral]** follow the Pokémon's gender. **[nonbinary]** and **[unisex]** work the same as **[neutral]**.
 - **[all]**, **[type ...]** and **[species ...]** go to any Pokémon that fits, whatever its gender.
+- **[nature ...]** goes to a Pokémon with that nature, in the Gen 3 games: HARDY, TIMID, JOLLY and the rest.
+- `#! generated baby` on its own line makes a set give baby names for every species (that's `baby_names.txt`). Names under **[species ...]** in that file join the made-up ones, and names under **[skip]** are never made, so a baby name that reads badly can be dropped.
 - **[trainer Name: SPECIES ...]** names that trainer's own Pokémon in battle. The first species is the one the name belongs to, and the rest are its family. The trainer's name is matched however the game spells it, so Lt. Surge matches LT.SURGE and LT. SURGE.
 - Headers use the game's own ids. Types: FIRE, WATER, PSYCHIC, DARK, STEEL and the rest. Species: NINETALES, MR_MIME, NIDORAN_F, FARFETCHD. Underscores don't matter, so Gold's MR__MIME matches MR_MIME. A header can name several.
 

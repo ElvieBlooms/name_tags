@@ -31,9 +31,9 @@ for _, f in ipairs(FILES) do
 end
 for _, r in ipairs(lib.rejected) do print("  rejected " .. r) end
 check(#lib.rejected == 0, "shipped lists have no rejected lines")
-local want = { "set_baked_goods", "set_canon", "set_food", "set_memes", "set_myths", "set_nature", "set_people", "set_pets", "set_pop_culture",
+local want = { "set_baby_names", "set_baked_goods", "set_canon", "set_colors", "set_drinks", "set_feelings", "set_food", "set_memes", "set_myths", "set_nature", "set_people", "set_pets", "set_pop_culture",
   "set_space", "set_species", "set_types" }
-check(table.concat(lib.order, ",") == table.concat(want, ","), "twelve sets in file order: " .. table.concat(lib.order, ","))
+check(table.concat(lib.order, ",") == table.concat(want, ","), "sixteen sets in file order: " .. table.concat(lib.order, ","))
 check(lib.sets.set_memes.defaultOn == false and lib.sets.set_pop_culture.defaultOn == false, "memes and pop culture start off")
 check(lib.sets.set_people.defaultOn == true, "people starts on")
 local pg = lib.sets.set_people.gender
@@ -178,13 +178,17 @@ local records = { NINETALES = { types = { "FIRE" } }, EEVEE = { types = { "NORMA
 local game = { save = { party = {}, boxes = {} } }
 
 local m, hooks, events = load({}, records)
-check(#m.rows == 19, "7 setting rows + 12 set toggles (" .. #m.rows .. ")")
-check(m.rows[8].label == "BAKED GOODS" and m.rows[8].default == true, "BAKED GOODS starts on")
+check(#m.rows == 23, "7 setting rows + 16 set toggles (" .. #m.rows .. ")")
+check(m.rows[8].label == "BABY NAMES" and m.rows[8].default == false, "BABY NAMES starts off")
+check(m.rows[9].label == "BAKED GOODS" and m.rows[9].default == true, "BAKED GOODS starts on")
+check(m.rows[11].label == "COLORS" and m.rows[11].default == true, "COLORS starts on")
+check(m.rows[12].label == "DRINKS" and m.rows[12].default == true, "DRINKS starts on")
+check(m.rows[13].label == "FEELINGS" and m.rows[13].default == true, "FEELINGS starts on")
 check(m.rows[7].key == "trainers" and m.rows[7].default == "canon", "TRAINER TEAMS defaults to CANON")
-check(m.rows[9].type == "toggle" and m.rows[9].default == true and m.rows[9].label == "CANON", "CANON starts on")
-check(m.rows[11].label == "MEMES" and m.rows[11].default == false, "MEMES starts off")
-check(m.rows[16].label == "POP CULTURE" and m.rows[16].default == false, "POP CULTURE starts off")
-check(m.logs[#m.logs]:find("names in 12 sets"), "load logs the set count")
+check(m.rows[10].type == "toggle" and m.rows[10].default == true and m.rows[10].label == "CANON", "CANON starts on")
+check(m.rows[15].label == "MEMES" and m.rows[15].default == false, "MEMES starts off")
+check(m.rows[20].label == "POP CULTURE" and m.rows[20].default == false, "POP CULTURE starts off")
+check(m.logs[#m.logs]:find("names in 16 sets"), "load logs the set count")
 local name = hooks["catch.nickname"](function() return true end, { species = "NINETALES" }, { game = game })
 check(type(name) == "string" and name == name:upper() and #name <= 10, "Gen 1 catch gets a CAPS name: " .. tostring(name))
 check(hooks["catch.nickname"](function() return false end, { species = "NINETALES" }, { game = game }) == false, "false stands")
@@ -207,6 +211,16 @@ check(hooks["catch.nickname"](function() return true end, g2b, { game = game }) 
 local copy = { species = 197, name = "UMBREON", nickname = "NYX" }
 check(hooks["catch.nickname"](function() return true end, copy, { game = game }) == "NYX", "hook keeps a name a copy already wears")
 check(events["pokemon.caught"].prio < 0, "caught listener runs late")
+do
+  local _, hq, eq = load({ question = "ask" }, records)
+  local mon = { species = "UMBREON", name = "UMBREON" }
+  eq["pokemon.caught"].fn({ mon = mon, species = "UMBREON", game = game })
+  local before = mon.nickname
+  check(hq["catch.nickname"](function() return true end, mon, { game = game }) == true and mon.nickname == before,
+    "ASK ME: a Gen 2 or Gen 3 catch keeps its name and the question still shows")
+  local g1 = hq["catch.nickname"](function() return true end, { species = "NINETALES" }, { game = game })
+  check(type(g1) == "string", "ASK ME doesn't change Gen 1, which has no question to keep")
+end
 
 local gift = { species = "EEVEE", level = 25, ctx = { game = game } }
 events["pokemon.before_give"].fn(gift)
@@ -224,7 +238,7 @@ check(type(gift2.nickname) == "string" and gift2.nickname ~= gift2.nickname:uppe
 
 -- Only BAKED GOODS on: every general pick is a baked good
 do
-  local onlyBaked = { set_food = false, set_canon = false, set_people = false, set_pets = false, set_nature = false,
+  local onlyBaked = { set_colors = false, set_drinks = false, set_feelings = false, set_food = false, set_canon = false, set_people = false, set_pets = false, set_nature = false,
     set_myths = false, set_space = false, set_types = false, set_species = false, set_memes = false, set_pop_culture = false }
   local _, hb = load(onlyBaked, records)
   local baked = {}
@@ -239,7 +253,7 @@ do
 end
 
 -- Only FOOD on: every general pick is a food name
-local onlyFood = { set_baked_goods = false, set_canon = false, set_people = false, set_pets = false, set_nature = false, set_myths = false,
+local onlyFood = { set_colors = false, set_drinks = false, set_feelings = false, set_baked_goods = false, set_canon = false, set_people = false, set_pets = false, set_nature = false, set_myths = false,
   set_space = false, set_types = false, set_species = false, set_memes = false, set_pop_culture = false }
 local _, hooks3 = load(onlyFood, records)
 local foodNames = {}
@@ -783,6 +797,108 @@ local m4 = load({}, records, function(mm) mm.find = function() return { exports 
 local warned = false
 for _, l in ipairs(m4.logs) do warned = warned or l:find("isn't one Name Tags knows", 1, true) ~= nil end
 check(warned and next(fw2.defs) == nil, "an unknown API version registers nothing and says why")
+
+-- Baby names
+do
+  local function has(list, name) for _, n in ipairs(list) do if n == name then return true end end return false end
+  local function names(sp) return Core.babyNames(sp) end
+  check(has(names("CHARMANDER"), "Charmy") and has(names("CHARMANDER"), "Charoo"), "Charmander gives Charmy and Charoo")
+  check(has(names("ABRA"), "Abby"), "Abra gives Abby")
+  check(has(names("VENUSAUR"), "Ven-Ven"), "Venusaur gives Ven-Ven")
+  check(has(names("SQUIRTLE"), "Squirty") and not has(names("SQUIRTLE"), "Squiry"), "Squirtle keeps its rt")
+  check(has(names("MR_MIME"), "Mimmy") and has(names("MR__MIME"), "Mimmy"), "Mr. Mime skips MR, both spellings")
+  check(has(names("TREECKO"), "Tree-Tree") and has(names("RAYQUAZA"), "Ray-Ray"), "no stem ends on c or q")
+  check(not has(names("GEODUDE"), "Geooo") and has(names("GEODUDE"), "Geo-Geo"), "Geodude is Geo")
+  check(#names("NIDORAN_M") > 0 and #names("PORYGON2") > 0 and #names("HO_OH") > 0, "odd ids still give names")
+  local allValid, longest = true, 0
+  local all = {}
+  for _, f in ipairs({ "species.txt" }) do
+    for id in readFile("names/" .. f):gmatch("%[species ([^%]]+)%]") do
+      for sp in id:gmatch("%S+") do all[#all + 1] = sp end
+    end
+  end
+  for _, sp in ipairs(all) do
+    local list = names(sp)
+    if #list == 0 then allValid = false; print("  no baby names for " .. sp) end
+    for _, n in ipairs(list) do
+      if not Core.validName(n) then allValid = false; print("  bad baby name " .. n) end
+      longest = math.max(longest, #n)
+    end
+  end
+  check(allValid and longest <= 10, "every species gets valid baby names up to 10 letters")
+  local skip = { CHARMY = true }
+  check(not has(Core.babyNames("CHARMANDER", skip), "Charmy"), "[skip] leaves a made-up name out")
+  check(lib.sets.set_baby_names.defaultOn == false and lib.sets.set_baby_names.baby == true, "BABY NAMES is generated and starts off")
+
+  local babyLib = Core.newLibrary()
+  Core.parseList(babyLib, "#! generated baby\n[species PIKACHU]\nPika-Pika\n[skip]\nPiky\n", "baby.txt", "set_baby")
+  local pools = Core.combine(babyLib)
+  check(pools.baby and pools.babySpecies.PIKACHU[1] == "Pika-Pika" and pools.species.PIKACHU == nil,
+    "a baby set's species names stay with the baby names")
+  local r, gotPika, gotSkipped, kinds = Core.seededRand("baby"), false, false, {}
+  for _ = 1, 200 do
+    local n, kind = Core.pickName(pools, "PIKACHU", { "ELECTRIC" }, {}, "sometimes", r)
+    kinds[kind] = true
+    if n == "Pika-Pika" then gotPika = true end
+    if n == "Piky" then gotSkipped = true end
+  end
+  check(gotPika and not gotSkipped and kinds.baby and not kinds.general, "only BABY NAMES on: every name is a baby name")
+  -- with other sets on, baby names are a themed share, not the whole pick
+  local mixed = Core.combine(lib, function(id) return id == "set_baby_names" or id == "set_people" end)
+  local babies, total = 0, 400
+  math.randomseed(7)
+  for _ = 1, total do
+    local _, kind = Core.pickName(mixed, "EEVEE", { "NORMAL" }, {}, "sometimes", math.random, "female")
+    if kind == "baby" then babies = babies + 1 end
+  end
+  check(babies > total * 0.08 and babies < total * 0.25, "SOMETIMES gives baby names about 15% of the time: " .. babies)
+end
+
+-- Natures
+do
+  check(Core.natureOf({ personality = 10 }) == "TIMID" and Core.natureOf({ personality = 25 }) == "HARDY",
+    "nature from personality % 25")
+  check(Core.natureOf({ nature = 3 }) == "ADAMANT" and Core.natureOf({ nature = "jolly" }) == "JOLLY", "nature field read")
+  check(Core.natureOf({ dvs = {} }) == nil and Core.natureOf(nil) == nil, "Gen 1 and Gen 2 have no nature")
+  local f = lib.sets.set_feelings
+  local count = 0
+  for _, n in ipairs(Core.NATURES) do if f.natures[n] and #f.natures[n] > 0 then count = count + 1 end end
+  check(count == 25, "FEELINGS has names for all 25 natures")
+  local only = Core.combine(lib, function(id) return id == "set_feelings" end)
+  local timid = {}
+  for _, n in ipairs(f.natures.TIMID) do timid[n] = true end
+  local r, hits, wrong = Core.seededRand("nature"), 0, 0
+  local brave = {}
+  for _, n in ipairs(f.natures.BRAVE) do brave[n] = true end
+  for _ = 1, 300 do
+    local n, kind = Core.pickName(only, "ABRA", { "PSYCHIC" }, {}, "sometimes", r, "female", "TIMID")
+    if kind == "nature" then
+      hits = hits + 1
+      if not timid[n] then wrong = wrong + 1 end
+    end
+  end
+  check(hits > 20 and wrong == 0, "a Timid catch gets Timid names: " .. hits)
+  local none = 0
+  for _ = 1, 200 do
+    local _, kind = Core.pickName(only, "ABRA", { "PSYCHIC" }, {}, "sometimes", r, "female", nil)
+    if kind == "nature" then none = none + 1 end
+  end
+  check(none == 0, "no nature, no nature names")
+  -- through the mod: a Gen 3 catch with only FEELINGS on and THEMED OFTEN
+  local onlyFeel = { themed = "often" }
+  for _, f in ipairs(FILES) do
+    local key = Core.setOption(f)
+    if key ~= "set_feelings" then onlyFeel[key] = false end
+  end
+  local _, _, ev = load(onlyFeel, records)
+  local natureHits = 0
+  for i = 1, 60 do
+    local mon = { species = "RALTS", name = "RALTS", nickname = "", personality = 10 }
+    ev["pokemon.caught"].fn({ mon = mon, species = "RALTS", game = { save = {} } })
+    for _, n in ipairs(f.natures.TIMID) do if mon.nickname == n:upper() then natureHits = natureHits + 1 end end
+  end
+  check(natureHits > 5, "a caught Gen 3 mon's nature reaches the picker: " .. natureHits)
+end
 
 print(("%d passed, %d failed"):format(passes, failures))
 os.exit(failures == 0 and 0 or 1)

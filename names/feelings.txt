@@ -1,0 +1,212 @@
+# Feelings and moods. In Ruby, Sapphire, Emerald, FireRed and LeafGreen a catch can also get
+# a name that matches its own nature: a Timid one might be Shy, a Brave one Valiant.
+# One name per line, up to 10 letters. Letters only, with an inner hyphen allowed (Mary-Jo).
+
+[all]
+Ardour
+Awe
+Bliss
+Calm
+Cheer
+Content
+Courage
+Delight
+Ease
+Elation
+Envy
+Euphoria
+Fondness
+Glee
+Gloom
+Glow
+Gratitude
+Grit
+Grumpy
+Happy
+Hush
+Jubilant
+Merry
+Mirth
+Moody
+Nerves
+Patience
+Peace
+Pep
+Pique
+Pride
+Quirk
+Rapture
+Relief
+Rest
+Serene
+Smitten
+Snug
+Solace
+Sorrow
+Spirit
+Sunny
+Sulky
+Tender
+Thrill
+Tranquil
+Trust
+Wonder
+Woe
+Yearning
+Zeal
+Zest
+
+[female]
+Grace
+Hope
+Joy
+
+[nature HARDY]
+Hearty
+Steady
+Sturdy
+Tough
+
+[nature LONELY]
+Longing
+Solo
+Wistful
+Yearning
+
+[nature BRAVE]
+Bold
+Daring
+Gallant
+Valiant
+
+[nature ADAMANT]
+Resolve
+Steadfast
+Stubborn
+Willful
+
+[nature NAUGHTY]
+Cheeky
+Impish
+Mischief
+Rascal
+
+[nature BOLD]
+Brash
+Gutsy
+Nerve
+Plucky
+
+[nature DOCILE]
+Gentle
+Mellow
+Meek
+Placid
+
+[nature RELAXED]
+Breezy
+Chill
+Easy
+Lazy-Days
+
+[nature IMPISH]
+Cheeky
+Prank
+Puckish
+Sly
+
+[nature LAX]
+Dozy
+Idle
+Lazy
+Sloth
+
+[nature TIMID]
+Bashful
+Coy
+Meek
+Shy
+
+[nature HASTY]
+Dash
+Hurry
+Rush
+Zippy
+
+[nature SERIOUS]
+Earnest
+Sober
+Solemn
+Stern
+
+[nature JOLLY]
+Cheer
+Chipper
+Giggles
+Jolly
+
+[nature NAIVE]
+Dreamy
+Innocent
+Starry
+Trusting
+
+[nature MODEST]
+Humble
+Modest
+Quiet
+Simple
+
+[nature MILD]
+Gentle
+Kind
+Mild
+Soft
+
+[nature QUIET]
+Hush
+Murmur
+Silence
+Still
+
+[nature BASHFUL]
+Blush
+Bashful
+Coy
+Fluster
+
+[nature RASH]
+Hothead
+Impulse
+Reckless
+Rash
+
+[nature CALM]
+Calm
+Composed
+Serene
+Zen
+
+[nature GENTLE]
+Gentle
+Tender
+Velvet
+Warmth
+
+[nature SASSY]
+Attitude
+Sass
+Snark
+Spunk
+
+[nature CAREFUL]
+Careful
+Caution
+Mindful
+Wary
+
+[nature QUIRKY]
+Kooky
+Oddball
+Quirk
+Whimsy

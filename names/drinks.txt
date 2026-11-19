@@ -1,0 +1,139 @@
+# Teas, coffees, juices, sodas and hot drinks, with no brand names and nothing alcoholic.
+# A few suit some types better, so those are listed under their type too.
+# One name per line, up to 10 letters. Letters only, with an inner hyphen allowed (Mary-Jo).
+
+[all]
+Affogato
+Americano
+Assam
+Ayran
+Barley
+Boba
+Bubbletea
+Cappuccino
+Chai
+Chamomile
+Cider
+Cocoa
+Coffee
+Cola
+Cortado
+Darjeeling
+Doppio
+Earl-Grey
+Eggnog
+Espresso
+Frappe
+Genmaicha
+Ginger-Ale
+Gyokuro
+Hibiscus
+Horchata
+Hojicha
+Juice
+Kefir
+Kombucha
+Kvass
+Lassi
+Latte
+Lemonade
+Limeade
+Macchiato
+Malt
+Matcha
+Milk
+Milkshake
+Mocha
+Nectar
+Oolong
+Orangeade
+Punch
+Pekoe
+Ristretto
+Rooibos
+Sencha
+Seltzer
+Shake
+Smoothie
+Soda
+Spritz
+Sweet-Tea
+Tea
+Tisane
+Tonic
+Yerba
+Yuzu
+
+[type FIRE]
+Cider
+Chai
+Cocoa
+Espresso
+Ginger-Ale
+Hot-Toddy
+Spice
+
+[type WATER]
+Seltzer
+Soda
+Spritz
+Tonic
+Water
+
+[type GRASS]
+Genmaicha
+Gyokuro
+Matcha
+Mint
+Sencha
+Yerba
+
+[type ICE]
+Frappe
+Granita
+Icetea
+Milkshake
+Slushie
+Smoothie
+
+[type ELECTRIC]
+Cola
+Doppio
+Espresso
+Fizz
+Ristretto
+Spark
+
+[type PSYCHIC]
+Chamomile
+Earl-Grey
+Hibiscus
+Lavender
+Tisane
+
+[type DARK]
+Cola
+Cortado
+Espresso
+Oolong
+Stout
+
+[type GHOST]
+Boba
+Kombucha
+Milk
+Nectar
+
+[type GROUND]
+Barley
+Coffee
+Malt
+Mocha
+Rooibos
+
+
+[type NORMAL]
+Juice
+Lemonade
+Milk
+Tea

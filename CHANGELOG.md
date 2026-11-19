@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.4.0
+
+Four new sets, from a list of Nuzlocke nickname themes.
+
+- **COLORS**: paint-chart and dye colors, with names for each type (a Fire type might be Vermilion, a Water type Cerulean). Starts ON.
+- **DRINKS**: teas, coffees, juices and hot drinks, with no brand names and nothing alcoholic. Starts ON.
+- **FEELINGS**: feelings and moods. In the Gen 3 games a catch can get a name that matches its nature, so a Timid one might be Shy. Starts ON.
+- **BABY NAMES**: made from the species name, like Charmy, Abby and Ven-Ven. Starts OFF.
+- **NICKNAME QUESTION** set to **ASK ME** shows the question again on engine 0.4.4 and newer, with the new name already on, so NO keeps it. It had stopped showing once the engine let Name Tags skip it.
+- The README no longer says Gen 2 and Gen 3 show the question for a second: on 0.4.4 and newer it doesn't show at all.
+- Name files can use **[nature ...]** headers, and a `#! generated baby` set can add its own names per species or drop made-up ones with **[skip]**.
+
 ## 1.3.0
 
 Trainer achievements for Red, Blue, Yellow and the Gen 3 games, now that engine 0.4.4 shows trainers' names there.

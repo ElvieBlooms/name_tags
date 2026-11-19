@@ -1,12 +1,11 @@
 -- Name Tags
 -- Gives each Pokémon you catch a random nickname from the lists in names/,
 -- so every catch is someone without you having to think up a name.
--- Gen 1: the catch.nickname hook answers "Do you want to give a nickname?"
--- for the player, so no question is asked.
--- Gen 2 and Gen 3 have no call site for that hook yet, so the name goes on in
--- pokemon.caught, before the game asks, and NICKNAME QUESTION answers NO for
--- the player through mod.input. If a later engine raises catch.nickname there
--- too, the question goes away on its own with no change here.
+-- The catch.nickname hook answers "Do you want to give a nickname?" for the
+-- player, so no question is asked. Gen 2 and Gen 3 raise it from engine 0.4.4;
+-- the name goes on earlier there, in pokemon.caught or at the ball throw, and
+-- the hook hands it back. On older engines NICKNAME QUESTION answers NO for the
+-- player through mod.input instead.
 -- Names can follow gender: [male], [female] and [neutral] sections, with
 -- genderless Pokémon drawing neutral names only. Gen 1 uses the Gen 2 rule.
 -- Gifts go through pokemon.before_give (Gen 1 and Gen 3) when GIFTS is AUTO.
@@ -19,7 +18,10 @@
 --   [all]                   names any Pokémon can get
 --   [type FIRE]             names only for that type
 --   [species NINETALES]     names only for those species
+--   [nature TIMID]          names only for that nature (Gen 3)
 -- A header can list several ids. Lines starting with # are notes.
+-- A file with "#! generated baby" makes baby names from the species name
+-- (Charmander's Charmy, Abra's Abby) on top of any names it lists.
 local NAMES_DIR = "names"
 
 -- The naming screen's limit in all three generations, and the one
@@ -27,10 +29,18 @@ local NAMES_DIR = "names"
 local MAX_LEN = 10
 
 -- Chance a themed pool is tried before the general one, per THEMED NAMES.
+-- Each themed pool only takes its share when it has a name to give.
 local THEME_WEIGHTS = {
-  sometimes = { species = 0.15, type = 0.25 },
-  often = { species = 0.35, type = 0.40 },
+  sometimes = { species = 0.15, baby = 0.15, nature = 0.15, type = 0.25 },
+  often = { species = 0.35, baby = 0.25, nature = 0.25, type = 0.40 },
 }
+
+-- Gen 3 natures, in the game's order: personality % 25.
+local NATURES = { "HARDY", "LONELY", "BRAVE", "ADAMANT", "NAUGHTY", "BOLD", "DOCILE",
+  "RELAXED", "IMPISH", "LAX", "TIMID", "HASTY", "SERIOUS", "JOLLY", "NAIVE", "MODEST",
+  "MILD", "QUIET", "BASHFUL", "RASH", "CALM", "GENTLE", "SASSY", "CAREFUL", "QUIRKY" }
+local NATURE_SET = {}
+for _, n in ipairs(NATURES) do NATURE_SET[n] = true end
 
 local function trim(s) return (s:gsub("^%s+", ""):gsub("%s+$", "")) end
 
@@ -68,7 +78,7 @@ local GENDER_HEADERS = { male = "male", female = "female", neutral = "neutral",
   nonbinary = "neutral", unisex = "neutral" }
 
 local function newSet()
-  return { all = {}, types = {}, species = {}, seen = {}, count = 0, defaultOn = true,
+  return { all = {}, types = {}, species = {}, natures = {}, skip = {}, seen = {}, count = 0, defaultOn = true,
     gender = { male = {}, female = {}, neutral = {} }, trainers = {} }
 end
 
@@ -98,6 +108,8 @@ local function parseList(lib, text, fileName, setId)
     if line:match("^#!%s*default%s+off%s*$") then
       -- a set that starts switched off (pop culture, memes)
       set.defaultOn = false
+    elseif line:match("^#!%s*generated%s+baby%s*$") then
+      set.baby = true
     elseif line == "" or line:sub(1, 1) == "#" then
       -- blank or a note
     elseif line:sub(1, 1) == "[" then
@@ -118,6 +130,17 @@ local function parseList(lib, text, fileName, setId)
           if #entry.species > 0 then
             set.trainers[#set.trainers + 1] = entry
             targets[1] = entry.names
+          end
+        end
+      elseif kind == "skip" and rest == "" then
+        -- generated baby names to leave out
+        targets[1] = set.skip
+      elseif kind == "nature" then
+        for id in rest:gmatch("[^%s,]+") do
+          local key = id:upper()
+          if NATURE_SET[key] then
+            set.natures[key] = set.natures[key] or {}
+            targets[#targets + 1] = set.natures[key]
           end
         end
       elseif kind == "type" or kind == "species" then
@@ -145,7 +168,8 @@ end
 
 -- The switched-on sets merged into one set of pools.
 local function combine(lib, enabled)
-  local pools = { all = {}, types = {}, species = {},
+  local pools = { all = {}, types = {}, species = {}, natures = {}, baby = false,
+    babySpecies = {}, babySkip = {},
     gender = { male = {}, female = {}, neutral = {} }, trainers = {} }
   local function append(into, list)
     for _, name in ipairs(list) do into[#into + 1] = name end
@@ -155,14 +179,24 @@ local function combine(lib, enabled)
       local set = lib.sets[setId]
       append(pools.all, set.all)
       append(pools.trainers, set.trainers)
+      if set.baby then
+        pools.baby = true
+        for _, name in ipairs(set.skip) do pools.babySkip[name:upper()] = true end
+      end
+      for key, list in pairs(set.natures) do
+        pools.natures[key] = pools.natures[key] or {}
+        append(pools.natures[key], list)
+      end
       for g, list in pairs(set.gender) do append(pools.gender[g], list) end
       for key, list in pairs(set.types) do
         pools.types[key] = pools.types[key] or {}
         append(pools.types[key], list)
       end
+      -- a baby set's own species names join the generated ones
+      local speciesInto = set.baby and pools.babySpecies or pools.species
       for key, list in pairs(set.species) do
-        pools.species[key] = pools.species[key] or {}
-        append(pools.species[key], list)
+        speciesInto[key] = speciesInto[key] or {}
+        append(speciesInto[key], list)
       end
     end
   end
@@ -211,13 +245,111 @@ local GENDER_POOLS = {
   none = { "neutral" }, unknown = { "male", "female", "neutral" },
 }
 
+-- Baby names from the species name: the start of it, up to the first
+-- vowel sound and a consonant, then a little ending. Charmander gives Charmy
+-- and Charoo, Abra gives Abby, Squirtle gives Squirty, Mr. Mime gives Mimmy.
+-- Words with no vowel (MR) and single letters (Nidoran's M and F) are skipped.
+local BABY_ENDINGS = { "y", "ie", "oo", "kins", "boo", "bug", "pie", "ums", "let", "" }
+-- after two consonants (Blast, Charm) only the soft endings read well
+local SOFT_ENDINGS = { y = true, ie = true, oo = true, ums = true }
+local DOUBLE_OK = { b = true, d = true, g = true, l = true, m = true, n = true, p = true, r = true, t = true }
+-- consonant pairs that end a stem well; the first three always stay together
+local KEEP_PAIR = { st = true, rt = true, sh = true, ch = true, th = true,
+  lb = false, rm = false, mp = false, nd = false, nk = false, lt = false, ng = false }
+local DIPHTHONG = { ee = true, oo = true, ea = true, ai = true, ay = true, ou = true, oa = true, ey = true, ie = true }
+local function isVowel(word, i)
+  local c = word:sub(i, i)
+  if c == "y" then return i > 1 end
+  if c == "u" and i > 1 and word:sub(i - 1, i - 1) == "q" then return false end
+  return c:find("[aeiou]") ~= nil
+end
+local function babyStems(species)
+  local word
+  for w in tostring(species or ""):lower():gmatch("%a+") do
+    local hasVowel = false
+    for i = 1, #w do if isVowel(w, i) then hasVowel = true break end end
+    if #w > 1 and hasVowel then word = w break end
+  end
+  if not word then return {} end
+  local i = 1
+  while i <= #word and not isVowel(word, i) do i = i + 1 end
+  local v = i
+  while i <= #word and isVowel(word, i) do i = i + 1 end
+  local run = word:sub(v, i - 1)
+  if #run >= 2 and v > 1 and not DIPHTHONG[run:sub(1, 2)] then
+    -- Geodude is Geo, not Geod
+    return { word:sub(1, v + 1) }
+  end
+  if i > #word then return { word } end
+  local pair = word:sub(i, i + 1)
+  -- Treecko is Tree and Rayquaza is Ray: a stem never ends on c or q
+  if pair == "ck" or word:sub(i, i) == "q" or (word:sub(i, i) == "c" and #run >= 2) then
+    return { word:sub(1, i - 1) }
+  end
+  if KEEP_PAIR[pair] then return { word:sub(1, i + 1) } end
+  local stems = { word:sub(1, i) }
+  if KEEP_PAIR[pair] == false then stems[2] = word:sub(1, i + 1) end
+  return stems
+end
+local function babyNames(species, skip)
+  local out, seen = {}, {}
+  for _, stem in ipairs(babyStems(species)) do
+    local last = stem:sub(-1)
+    local endsVowel = isVowel(stem, #stem)
+    local twoConsonants = #stem >= 3 and not endsVowel and not isVowel(stem, #stem - 1)
+    for _, ending in ipairs(BABY_ENDINGS) do
+      local name
+      if ending == "" then
+        -- doubled with a hyphen, like Ven-Ven, for short stems only
+        if #stem <= 4 then
+          local cap = stem:sub(1, 1):upper() .. stem:sub(2)
+          name = cap .. "-" .. cap
+        end
+      elseif twoConsonants and not SOFT_ENDINGS[ending] then
+        name = nil
+      elseif endsVowel and ending:find("^[aeiouy]") then
+        -- Geo plus oo would be Geooo
+        name = nil
+      else
+        local base = stem
+        if ending:find("^[yio]") and #stem <= 3 and DOUBLE_OK[last] and isVowel(stem, #stem - 1) then
+          base = stem .. last
+        end
+        name = base:sub(1, 1):upper() .. base:sub(2) .. ending
+      end
+      if name and #name >= 3 and validName(name) and not seen[name:upper()]
+          and not (skip and skip[name:upper()]) then
+        seen[name:upper()] = true
+        out[#out + 1] = name
+      end
+    end
+  end
+  return out
+end
+
+-- Gen 3 nature id from a Pokémon, or nil in Gen 1 and Gen 2.
+local function natureOf(mon)
+  if type(mon) ~= "table" then return nil end
+  local n = mon.nature
+  if type(n) == "string" and NATURE_SET[n:upper()] then return n:upper() end
+  if type(n) ~= "number" then n = tonumber(mon.personality) end
+  if type(n) ~= "number" then return nil end
+  return NATURES[math.floor(n) % 25 + 1]
+end
+
 -- Pick a name. types is a list of type ids; gender is male, female, none or
--- nil; rand() returns a float in [0, 1). Returns the name and the pool it
--- came from ("species", "type" or "general"), or nil only when every
--- switched-on list is empty.
-local function pickName(pools, species, types, used, themed, rand, gender)
+-- nil; nature is a Gen 3 nature id or nil; rand() returns a float in [0, 1).
+-- Returns the name and the pool it came from ("species", "baby", "nature",
+-- "type" or "general"), or nil only when every switched-on list is empty.
+local function pickName(pools, species, types, used, themed, rand, gender, nature)
   local weights = THEME_WEIGHTS[themed] or THEME_WEIGHTS.sometimes
   local speciesPool = unused(pools.species[speciesKey(species)], used)
+  local babyPool = {}
+  if pools.baby then
+    unused(pools.babySpecies and pools.babySpecies[speciesKey(species)], used, babyPool)
+    unused(babyNames(species, pools.babySkip), used, babyPool)
+  end
+  local naturePool = nature and unused(pools.natures and pools.natures[nature], used) or {}
   local typePool, seenType = {}, {}
   for _, t in ipairs(types or {}) do
     local key = typeKey(t)
@@ -228,9 +360,24 @@ local function pickName(pools, species, types, used, themed, rand, gender)
   end
   local function from(list) return list[math.floor(rand() * #list) + 1] end
 
-  local roll = rand()
-  if #speciesPool > 0 and roll < weights.species then return from(speciesPool), "species" end
-  if #typePool > 0 and roll < weights.species + weights.type then return from(typePool), "type" end
+  -- Each theme takes its share of the roll in turn. Baby and nature names
+  -- only take one when they have names to give. A species with no names of
+  -- its own hands its share to the type names, and a type share with no names
+  -- falls to the general lists, as before there were other themes.
+  local tiers = {
+    { speciesPool, #speciesPool > 0 and weights.species or 0, "species" },
+    { babyPool, #babyPool > 0 and weights.baby or 0, "baby" },
+    { naturePool, #naturePool > 0 and weights.nature or 0, "nature" },
+    { typePool, weights.type + (#speciesPool > 0 and 0 or weights.species), "type" },
+  }
+  local roll, edge = rand(), 0
+  for _, tier in ipairs(tiers) do
+    edge = edge + tier[2]
+    if roll < edge then
+      if #tier[1] > 0 then return from(tier[1]), tier[3] end
+      break
+    end
+  end
   local everyone = {}
   for _, name in ipairs(pools.all) do everyone[#everyone + 1] = name end
   for _, g in ipairs(GENDER_POOLS[gender or "unknown"] or GENDER_POOLS.unknown) do
@@ -239,8 +386,9 @@ local function pickName(pools, species, types, used, themed, rand, gender)
   local general = unused(everyone, used)
   if #general > 0 then return from(general), "general" end
   -- Every general name is taken: themed names next, then repeats.
-  if #speciesPool > 0 then return from(speciesPool), "species" end
-  if #typePool > 0 then return from(typePool), "type" end
+  for _, tier in ipairs(tiers) do
+    if #tier[1] > 0 then return from(tier[1]), tier[3] end
+  end
   if #everyone > 0 then return from(everyone), "general" end
   return nil
 end
@@ -442,6 +590,7 @@ local function setIndex(lib)
     for _, list in pairs(set.gender) do add(list) end
     for _, list in pairs(set.types) do add(list) end
     for _, list in pairs(set.species) do add(list) end
+    for _, list in pairs(set.natures or {}) do add(list) end
     for _, entry in ipairs(set.trainers or {}) do add(entry.names) end
     index[setId] = names
   end
@@ -550,6 +699,7 @@ local Core = {
   HOENN_GAMES = HOENN_GAMES, setIndex = setIndex, catchUnlocks = catchUnlocks,
   partyUnlocks = partyUnlocks, trainerUnlocks = trainerUnlocks, heroProgress = heroProgress,
   speciesKey = speciesKey, typeKey = typeKey, MAX_LEN = MAX_LEN,
+  babyNames = babyNames, babyStems = babyStems, natureOf = natureOf, NATURES = NATURES,
 }
 
 return function(mod)
@@ -643,7 +793,7 @@ return function(mod)
     game = game or mod.game
     local gender = mod.options:get("gender") ~= false and genderOf(species, mon) or nil
     local name, kind = pickName(pools(), species, typesOf(species, mon), inUse(game),
-      mod.options:get("themed"), rand, gender)
+      mod.options:get("themed"), rand, gender, natureOf(mon))
     return name and applyCase(name, mod.options:get("case")), kind
   end
 
@@ -726,8 +876,13 @@ return function(mod)
     clearPending()
     local verdict = next(mon, ctx)
     if verdict ~= true or mod.options:get("catches") ~= "auto" then return verdict end
-    -- already named at the ball throw (Gen 3 may hand over a copy by now)
-    if type(mon.nickname) == "string" and not isUnnamed(mon, mon.species) then return mon.nickname end
+    -- already named at the ball throw or in pokemon.caught (Gen 2 and Gen 3;
+    -- Gen 3 may hand over a copy by now). ASK ME lets the game ask anyway, with
+    -- the name already on: NO keeps it, YES opens the naming screen.
+    if type(mon.nickname) == "string" and not isUnnamed(mon, mon.species) then
+      if mod.options:get("question") == "ask" then return true end
+      return mon.nickname
+    end
     local name, kind = nameFor(mon.species, mon, ctx and ctx.game)
     if name then
       named[mon] = true

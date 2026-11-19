@@ -1,0 +1,13 @@
+#! default off
+#! generated baby
+# Baby names, made from the start of each species name and a little ending: Charmander can
+# be Charmy or Charoo, Abra can be Abby, Venusaur can be Ven-Ven. OFF to start.
+# Names under [species] headers here join the made-up ones for that species, and names under
+# [skip] are never made.
+# One name per line, up to 10 letters. Letters only, with an inner hyphen allowed (Mary-Jo).
+
+[species PIKACHU]
+Pika-Pika
+
+[skip]
+Bullet
