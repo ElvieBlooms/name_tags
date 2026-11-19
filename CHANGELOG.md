@@ -10,6 +10,7 @@ Four new sets, from a list of Nuzlocke nickname themes.
 - **BABY NAMES**: made from the species name, like Charmy, Abby and Ven-Ven. Starts OFF.
 - **NICKNAME QUESTION** set to **ASK ME** shows the question again on engine 0.4.4 and newer, with the new name already on, so NO keeps it. It had stopped showing once the engine let Name Tags skip it.
 - The README no longer says Gen 2 and Gen 3 show the question for a second: on 0.4.4 and newer it doesn't show at all.
+- **REROLL** and **RENAME** in the party menu, outside battle, in every game. REROLL gives a Pokémon a fresh name under your current settings; RENAME opens the naming screen for any Pokémon in the party. A new **PARTY MENU** setting hides them.
 - Name files can use **[nature ...]** headers, and a `#! generated baby` set can add its own names per species or drop made-up ones with **[skip]**.
 
 ## 1.3.0

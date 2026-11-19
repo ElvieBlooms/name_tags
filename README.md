@@ -8,6 +8,15 @@ Names follow the Pokémon's gender: a female gets female and neutral names, a ma
 
 If you have a better name in mind, the Name Rater still works as usual.
 
+## Changing a name later
+
+Pick a Pokémon in the party menu, outside battle, and there are two extra rows above **SWITCH**:
+
+- **REROLL** gives it a fresh name under your current settings, so a team caught before you switched to only **BAKED GOODS** can still become a bakery.
+- **RENAME** opens the game's own naming screen, like the Name Rater, for any Pokémon in your party, traded ones too.
+
+Both are free and work in every game. Switch **PARTY MENU** off to hide them.
+
 Works in Red, Blue and Yellow, Gold, Silver and Crystal, and the Gen 3 games.
 
 ## What happens after a catch
@@ -91,6 +100,7 @@ Set these in the mod manager.
 - **MATCH GENDER**: **ON** keeps male, female and neutral names to Pokémon of that gender. **OFF** lets any name go to any Pokémon.
 - **NICKNAME QUESTION** (Gen 2 and Gen 3): **ANSWER NO** skips the question. **ASK ME** shows it with the new name already on, "Give a nickname to SIENNA?", so NO keeps it and YES lets you pick your own.
 - **TRAINER TEAMS**: **CANON** gives canon trainers' Pokémon their names, **ALL** names every trainer's Pokémon, **OFF** leaves them alone. See above.
+- **PARTY MENU**: **ON** adds **REROLL** and **RENAME** to the party menu. See above.
 - One row per set: **BABY NAMES**, **BAKED GOODS**, **CANON**, **COLORS**, **DRINKS**, **FEELINGS**, **FOOD**, **MEMES**, **MYTHS**, **NATURE**, **PEOPLE**, **PETS**, **POP CULTURE**, **SPACE**, **SPECIES**, **TYPES**. Switching **CANON** off also stops the canon trainer names. All start **ON** except **BABY NAMES**, **MEMES** and **POP CULTURE**, which start **OFF**, since they aren't the everyday names the rest stick to. Leave only **FOOD** on for a team of snacks, only **BAKED GOODS** for a bakery, or only **BABY NAMES** for a nursery.
 
 ## How names are picked

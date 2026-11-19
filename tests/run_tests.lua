@@ -178,16 +178,17 @@ local records = { NINETALES = { types = { "FIRE" } }, EEVEE = { types = { "NORMA
 local game = { save = { party = {}, boxes = {} } }
 
 local m, hooks, events = load({}, records)
-check(#m.rows == 23, "7 setting rows + 16 set toggles (" .. #m.rows .. ")")
-check(m.rows[8].label == "BABY NAMES" and m.rows[8].default == false, "BABY NAMES starts off")
-check(m.rows[9].label == "BAKED GOODS" and m.rows[9].default == true, "BAKED GOODS starts on")
-check(m.rows[11].label == "COLORS" and m.rows[11].default == true, "COLORS starts on")
-check(m.rows[12].label == "DRINKS" and m.rows[12].default == true, "DRINKS starts on")
-check(m.rows[13].label == "FEELINGS" and m.rows[13].default == true, "FEELINGS starts on")
+check(#m.rows == 24, "8 setting rows + 16 set toggles (" .. #m.rows .. ")")
+check(m.rows[8].key == "party_menu" and m.rows[8].default == true, "PARTY MENU starts on")
+check(m.rows[9].label == "BABY NAMES" and m.rows[9].default == false, "BABY NAMES starts off")
+check(m.rows[10].label == "BAKED GOODS" and m.rows[10].default == true, "BAKED GOODS starts on")
+check(m.rows[12].label == "COLORS" and m.rows[12].default == true, "COLORS starts on")
+check(m.rows[13].label == "DRINKS" and m.rows[13].default == true, "DRINKS starts on")
+check(m.rows[14].label == "FEELINGS" and m.rows[14].default == true, "FEELINGS starts on")
 check(m.rows[7].key == "trainers" and m.rows[7].default == "canon", "TRAINER TEAMS defaults to CANON")
-check(m.rows[10].type == "toggle" and m.rows[10].default == true and m.rows[10].label == "CANON", "CANON starts on")
-check(m.rows[15].label == "MEMES" and m.rows[15].default == false, "MEMES starts off")
-check(m.rows[20].label == "POP CULTURE" and m.rows[20].default == false, "POP CULTURE starts off")
+check(m.rows[11].type == "toggle" and m.rows[11].default == true and m.rows[11].label == "CANON", "CANON starts on")
+check(m.rows[16].label == "MEMES" and m.rows[16].default == false, "MEMES starts off")
+check(m.rows[21].label == "POP CULTURE" and m.rows[21].default == false, "POP CULTURE starts off")
 check(m.logs[#m.logs]:find("names in 16 sets"), "load logs the set count")
 local name = hooks["catch.nickname"](function() return true end, { species = "NINETALES" }, { game = game })
 check(type(name) == "string" and name == name:upper() and #name <= 10, "Gen 1 catch gets a CAPS name: " .. tostring(name))
@@ -898,6 +899,57 @@ do
     for _, n in ipairs(f.natures.TIMID) do if mon.nickname == n:upper() then natureHits = natureHits + 1 end end
   end
   check(natureHits > 5, "a caught Gen 3 mon's nature reaches the picker: " .. natureHits)
+end
+
+-- Party menu rows
+do
+  local m2, h2 = load({ case = "mixed" }, records)
+  local wrap = h2["ui.party.submenu"]
+  check(type(wrap) == "function", "party submenu hook registered")
+  local same = function(_, items) return items end
+  local function field() return { { label = "CUT", action = "cut" }, { label = "STATS", action = "stats" },
+    { label = "SWITCH", action = "switch" }, { label = "CANCEL", action = "cancel" } } end
+  local g = { save = { version = "red", party = {} }, data = {} }
+  local mon = { species = "PIKACHU", name = "PIKACHU", nickname = "SPARKY", dvs = { attack = 9 } }
+  local rows = wrap(same, g, field(), mon, { overworld = {} })
+  check(rows[3].label == "REROLL" and rows[4].label == "RENAME" and rows[5].label == "SWITCH",
+    "REROLL and RENAME go just above SWITCH")
+  check(#wrap(same, g, field(), mon, { battle = {} }) == 4, "no rows in battle")
+  local choose = { { label = "ENTER", action = "ENTER" }, { label = "SUMMARY", action = "SUMMARY" },
+    { label = "CANCEL", action = "CANCEL" } }
+  check(#wrap(same, g, choose, mon, {}) == 3, "no rows on a choose list")
+  local gen3 = { { label = "SUMMARY", action = "SUMMARY" }, { label = "SWITCH", action = "SWITCH" },
+    { label = "ITEM", action = "ITEM" }, { label = "CANCEL", action = "CANCEL" } }
+  local g3rows = wrap(same, g, { { label = "SUMMARY", action = "SUMMARY" }, { label = "TELEPORT", action = "TELEPORT" },
+    { label = "SWITCH", action = "SWITCH" }, { label = "ITEM", action = "ITEM" }, { label = "CANCEL", action = "CANCEL" } }, mon, {})
+  check(g3rows[2].label == "TELEPORT" and g3rows[3].label == "REROLL" and g3rows[4].label == "RENAME",
+    "Gen 3: field moves stay under SUMMARY")
+  local before = mon.nickname
+  local seen = {}
+  for _ = 1, 20 do
+    rows = wrap(same, g, field(), mon, { overworld = {} })
+    rows[3].onSelect(mon, g)
+    check(mon.nickname ~= before and #mon.nickname > 0, "REROLL gives a different name: " .. tostring(mon.nickname))
+    before = mon.nickname
+    seen[mon.nickname] = true
+  end
+  check(mon.nickname:sub(2) == mon.nickname:sub(2):lower(), "REROLL follows LETTERS")
+  local _, h3 = load({ party_menu = false }, records)
+  check(#h3["ui.party.submenu"](same, g, field(), mon, {}) == 4, "PARTY MENU OFF leaves the list alone")
+  -- only BAKED GOODS: the bakery run fix
+  local onlyBaked = { party_menu = true }
+  for _, f in ipairs(FILES) do
+    local key = Core.setOption(f)
+    if key ~= "set_baked_goods" then onlyBaked[key] = false end
+  end
+  local _, h4 = load(onlyBaked, records)
+  local baked = {}
+  for _, n in ipairs(lib.sets.set_baked_goods.all) do baked[n:upper()] = true end
+  for _, list in pairs(lib.sets.set_baked_goods.types) do for _, n in ipairs(list) do baked[n:upper()] = true end end
+  for _, list in pairs(lib.sets.set_baked_goods.gender) do for _, n in ipairs(list) do baked[n:upper()] = true end end
+  local p = { species = "CHARMANDER", name = "CHARMANDER", nickname = "BLAZE", dvs = { attack = 9 } }
+  h4["ui.party.submenu"](same, g, field(), p, {})[3].onSelect(p, g)
+  check(baked[p.nickname:upper()], "with only BAKED GOODS on, REROLL gives a baked good: " .. tostring(p.nickname))
 end
 
 print(("%d passed, %d failed"):format(passes, failures))

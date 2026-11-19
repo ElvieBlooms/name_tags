@@ -725,6 +725,7 @@ return function(mod)
       choices = { { "ANSWER NO", "no" }, { "ASK ME", "ask" } } },
     { key = "trainers", type = "choice", label = "TRAINER TEAMS", default = "canon",
       choices = { { "CANON", "canon" }, { "ALL", "all" }, { "OFF", "off" } } },
+    { key = "party_menu", type = "toggle", label = "PARTY MENU", default = true },
   }
   local lib = newLibrary()
   local setKeys = {}
@@ -867,6 +868,87 @@ return function(mod)
   mod.hooks:wrap("input.step", function(next, game, dt)
     next(game, dt)
     if pending then pollQuestion(game) end
+  end)
+
+  -- The party menu's REROLL and RENAME rows, outside battle. REROLL
+  -- picks a fresh name under the current settings; RENAME opens the game's
+  -- own naming screen, like the Name Rater, for any Pokémon in the party.
+  -- Gen 2 and Gen 3 open their naming screens through engine modules, which
+  -- is what the engine_internals permission in manifest.json is for.
+  local function genOf(game)
+    if mod.generation then return mod.generation end
+    local save = (game and game.save) or (mod.game and mod.game.save)
+    local v = type(save) == "table" and save.version or nil
+    if v == "ruby" or v == "sapphire" or v == "emerald" or v == "firered" or v == "leafgreen" then return 3 end
+    if v == "gold" or v == "silver" or v == "crystal" then return 2 end
+    return 1
+  end
+  -- Gen 3 party mons carry a species number; the lists are keyed by name.
+  local function partySpecies(mon)
+    local sp = mon.species or mon.speciesId
+    if type(sp) == "number" or tonumber(sp) then
+      local ok, G3 = pcall(require, "src.mods.Gen3Compat")
+      local name = ok and G3 and G3.speciesName and G3.speciesName(sp)
+      if name then return name end
+    end
+    return sp
+  end
+  local function reroll(mon, game)
+    local name, kind = nameFor(partySpecies(mon), mon, game)
+    if not name then return end
+    mon.nickname = name
+    named[mon] = true
+    achieve.party()
+    return name, kind
+  end
+  local function rename(mon, game, ctx)
+    local gen = genOf(game)
+    local species = partySpecies(mon)
+    local function done(name)
+      if type(name) == "string" and name ~= "" then mon.nickname = name end
+      achieve.party()
+    end
+    if gen == 3 then
+      local Naming = require("src.ui.game3.naming")
+      if Naming.isOpen and Naming.isOpen() then return end
+      Naming.open({ template = "NICKNAME", maxLen = MAX_LEN, title = Naming.monTitle(tostring(mon.name or species)),
+        initialText = mon.nickname or "", species = tonumber(mon.species or mon.speciesId),
+        gender = mon.gender, personality = mon.personality, game = game, onDone = done })
+    elseif gen == 2 then
+      local ow = (ctx and ctx.overworld) or (game and game.overworld)
+      if ow and ow.renameMon then ow:renameMon(mon, done) end
+    else
+      local RomText = require("src.core.RomText")
+      local okT, title = pcall(RomText, game.data, "NicknameTextString", nil)
+      mod.ui.push(game, "NamingScreen", { title = okT and title or nil, maxLen = MAX_LEN, mon = mon,
+        default = mon.nickname, onDone = done })
+    end
+  end
+  -- Field list only: it has both a stats row and a switch row, where the
+  -- lists for choosing a Pokémon (an item, the Day-Care, a contest) don't.
+  local function rowKind(row)
+    local key = tostring(row.action or row.id or row.label or ""):upper()
+    if key == "STATS" or key == "SUMMARY" then return "stats" end
+    if key == "SWITCH" then return "switch" end
+  end
+  mod.hooks:wrap("ui.party.submenu", function(next, game, items, mon, ctx)
+    items = next(game, items, mon, ctx)
+    if type(items) ~= "table" or type(mon) ~= "table" or (ctx and ctx.battle)
+        or mod.options:get("party_menu") == false then
+      return items
+    end
+    local hasStats, switchAt
+    for i, row in ipairs(items) do
+      local k = type(row) == "table" and rowKind(row)
+      if k == "stats" then hasStats = true elseif k == "switch" and not switchAt then switchAt = i end
+    end
+    if not (hasStats and switchAt) then return items end
+    -- just above SWITCH, so field moves stay where the game puts them
+    table.insert(items, switchAt, { label = "RENAME",
+      onSelect = function(m, g) rename(m or mon, g or game, ctx) end })
+    table.insert(items, switchAt, { label = "REROLL",
+      onSelect = function(m, g) reroll(m or mon, g or game) end })
+    return items
   end)
 
   -- Gen 1 catches. Another mod's answer (false, or its own name) stands; only
