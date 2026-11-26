@@ -883,6 +883,23 @@ return function(mod)
     if v == "gold" or v == "silver" or v == "crystal" then return 2 end
     return 1
   end
+  -- The player's party. mod.world:party() is empty in Gen 3 for an api 2
+  -- mod and missing in Gen 2, so those read the session and the save.
+  local function partyNow(game)
+    if genOf(game) == 3 then
+      local okR, R = pcall(require, "src.core.game3.runtime")
+      local sess = okR and type(R) == "table" and R.getSession and R.getSession()
+      if sess and type(sess.party) == "table" then return sess.party end
+    end
+    local ok, party = pcall(function() return mod.world and mod.world:party() end)
+    if ok and type(party) == "table" and #party > 0 then return party end
+    local listed = ok and type(party) == "table" and party or nil
+    game = game or mod.game
+    party = game and game.save and game.save.party
+    if type(party) == "table" then return party end
+    return listed
+  end
+
   -- Gen 3 party mons carry a species number; the lists are keyed by name.
   local function partySpecies(mon)
     local sp = mon.species or mon.speciesId
@@ -924,12 +941,16 @@ return function(mod)
         default = mon.nickname, onDone = done })
     end
   end
-  -- Field list only: it has both a stats row and a switch row, where the
-  -- lists for choosing a Pokémon (an item, the Day-Care, a contest) don't.
+  -- Field list only: a stats row plus SWITCH, ITEM, MAIL or MOVE. With one
+  -- Pokémon in the party Gen 3 leaves SWITCH out, so ITEM has to count too.
+  -- Battle lists (SHIFT, SEND OUT) and eggs get nothing.
+  local FIELD_ROWS = { SWITCH = true, ITEM = true, MAIL = true, MOVE = true }
+  local BATTLE_ROWS = { SHIFT = true, ["SEND OUT"] = true }
   local function rowKind(row)
     local key = tostring(row.action or row.id or row.label or ""):upper()
     if key == "STATS" or key == "SUMMARY" then return "stats" end
-    if key == "SWITCH" then return "switch" end
+    if FIELD_ROWS[key] then return "field", key end
+    if BATTLE_ROWS[key] then return "battle" end
   end
   mod.hooks:wrap("ui.party.submenu", function(next, game, items, mon, ctx)
     items = next(game, items, mon, ctx)
@@ -937,18 +958,62 @@ return function(mod)
         or mod.options:get("party_menu") == false then
       return items
     end
-    local hasStats, switchAt
+    if mon.isEgg or mon.egg then return items end
+    local hasStats, switchAt, inBattle
     for i, row in ipairs(items) do
-      local k = type(row) == "table" and rowKind(row)
-      if k == "stats" then hasStats = true elseif k == "switch" and not switchAt then switchAt = i end
+      local k
+      if type(row) == "table" then k = rowKind(row) end
+      if k == "stats" then hasStats = true
+      elseif k == "field" and not switchAt then switchAt = i
+      elseif k == "battle" then inBattle = true end
     end
-    if not (hasStats and switchAt) then return items end
-    -- just above SWITCH, so field moves stay where the game puts them
+    if inBattle or not (hasStats and switchAt) then return items end
+    -- just above SWITCH (or ITEM), so field moves stay where the game puts them
     table.insert(items, switchAt, { label = "RENAME",
       onSelect = function(m, g) rename(m or mon, g or game, ctx) end })
     table.insert(items, switchAt, { label = "REROLL",
       onSelect = function(m, g) reroll(m or mon, g or game) end })
     return items
+  end)
+
+  -- Ruby, Sapphire and Emerald hand over the starter from Birch's bag with no
+  -- nickname question and no pokemon.before_give, so it's named as the first
+  -- battle starts: the only Pokémon in the party, a level 5 Treecko, Torchic
+  -- or Mudkip, still under its species name. GIFTS doesn't apply, since the
+  -- game never asks; RENAME in the party menu is there for your own name.
+  local RSE_STARTERS = { TREECKO = true, TORCHIC = true, MUDKIP = true }
+  local function nameStarter(ev)
+    if genOf() ~= 3 or mod.save:get("rse_starter") then return end
+    local party = partyNow(type(ev) == "table" and ev.game or nil)
+    if not party or #party ~= 1 then return end
+    local mon = party[1]
+    if type(mon) ~= "table" or mon.isEgg or tonumber(mon.level or 5) ~= 5 then return end
+    local species = partySpecies(mon)
+    if not RSE_STARTERS[speciesKey(species)] or not isUnnamed(mon, species) then return end
+    local name = nameFor(species, mon, (type(ev) == "table" and ev.game) or mod.game)
+    if not name then return end
+    mon.nickname = name
+    named[mon] = true
+    mod.save:set("rse_starter", true)
+    mod.save:set("rse_starter_name", name)
+  end
+  -- The first battle works on a copy of the party and writes it back at the
+  -- end, so the name goes on again once it's over.
+  mod.events:on("battle.started", nameStarter)
+  mod.events:on("battle.ended", function(ev)
+    if genOf() ~= 3 then return end
+    local party = partyNow(type(ev) == "table" and ev.game or nil)
+    local mon = party and #party == 1 and party[1]
+    local given = mod.save:get("rse_starter_name")
+    if type(given) == "string" then
+      -- once, for the first battle only
+      mod.save:set("rse_starter_name", false)
+      if type(mon) == "table" and isUnnamed(mon, partySpecies(mon)) then
+        mon.nickname = given
+        named[mon] = true
+      end
+    end
+    if not mod.save:get("rse_starter") then nameStarter(ev) end
   end)
 
   -- Gen 1 catches. Another mod's answer (false, or its own name) stands; only
@@ -1120,11 +1185,7 @@ return function(mod)
     -- mod.world:party where the game has it, and the save's own party
     -- otherwise (Gold, Silver and Crystal for an API 2 mod).
     achieve.party = function()
-      local ok, party = pcall(function() return mod.world and mod.world:party() end)
-      if not ok or type(party) ~= "table" then
-        local game = mod.game
-        party = game and game.save and game.save.party
-      end
+      local party = partyNow()
       if type(party) ~= "table" then return end
       local nicknames = {}
       for _, mon in ipairs(party) do

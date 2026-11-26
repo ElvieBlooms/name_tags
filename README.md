@@ -10,7 +10,7 @@ If you have a better name in mind, the Name Rater still works as usual.
 
 ## Changing a name later
 
-Pick a Pokémon in the party menu, outside battle, and there are two extra rows above **SWITCH**:
+Pick a Pokémon in the party menu, outside battle, and there are two extra rows above **SWITCH** (above **ITEM** while it's your only Pokémon):
 
 - **REROLL** gives it a fresh name under your current settings, so a team caught before you switched to only **BAKED GOODS** can still become a bakery.
 - **RENAME** opens the game's own naming screen, like the Name Rater, for any Pokémon in your party, traded ones too.
@@ -94,7 +94,7 @@ Red, Blue, Yellow and the Gen 3 games need engine 0.4.4 or newer to show trainer
 Set these in the mod manager.
 
 - **CATCHES**: **AUTO** names every catch. **ASK** leaves catches to the game, the way it is without the mod.
-- **GIFTS**: starters, Eevee, Lapras, fossils and the other gifts. **ASK** by default, so the Pokémon you're handed at the start is still yours to name. **AUTO** names them too. That's tested in Gen 1. Gen 3 gifts take the name, but their own nickname question may still appear, and Gen 2 gifts aren't named yet.
+- **GIFTS**: starters, Eevee, Lapras, fossils and the other gifts. **ASK** by default, so the Pokémon you're handed at the start is still yours to name. **AUTO** names them too. Ruby, Sapphire and Emerald never ask you to name the starter from Birch's bag, so Name Tags names it either way, as your first battle ends; use **RENAME** if you'd rather pick. That's tested in Gen 1. Gen 3 gifts take the name, but their own nickname question may still appear, and Gen 2 gifts aren't named yet.
 - **LETTERS**: **CAPS** (MABEL) matches the game's own names. **Mixed** (Mabel) writes them as people do.
 - **THEMED NAMES**: how often a species, baby, nature or type name is picked over a general one, when one fits. **SOMETIMES** is about two catches in five, **OFTEN** about three in four. Baby and nature names add a little on top when they're on.
 - **MATCH GENDER**: **ON** keeps male, female and neutral names to Pokémon of that gender. **OFF** lets any name go to any Pokémon.

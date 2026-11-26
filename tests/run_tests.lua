@@ -952,5 +952,73 @@ do
   check(baked[p.nickname:upper()], "with only BAKED GOODS on, REROLL gives a baked good: " .. tostring(p.nickname))
 end
 
+-- Party menu rows with one Pokémon, eggs and battle lists
+do
+  local _, h = load({}, records)
+  local wrap = h["ui.party.submenu"]
+  local same = function(_, items) return items end
+  local g = { save = { version = "emerald", party = {} } }
+  local mon = { species = 280, name = "RALTS", nickname = "MISTY" }
+  local one = wrap(same, g, { { label = "SUMMARY", action = "SUMMARY" }, { label = "ITEM", action = "ITEM" },
+    { label = "CANCEL", action = "CANCEL" } }, mon, {})
+  check(one[2].label == "REROLL" and one[3].label == "RENAME" and one[4].label == "ITEM",
+    "one Pokémon in Gen 3 (no SWITCH): rows go above ITEM")
+  local egg = wrap(same, g, { { label = "SUMMARY", action = "SUMMARY" }, { label = "SWITCH", action = "SWITCH" },
+    { label = "CANCEL", action = "CANCEL" } }, { species = 280, isEgg = true }, {})
+  check(#egg == 3, "no rows for an egg")
+  local shift = wrap(same, g, { { label = "SHIFT", action = "SHIFT" }, { label = "SUMMARY", action = "SUMMARY" },
+    { label = "CANCEL", action = "CANCEL" } }, mon, {})
+  check(#shift == 3, "no rows on a double-battle list")
+end
+
+-- Ruby, Sapphire and Emerald starter
+do
+  local store = {}
+  local party = {}
+  local function setup(m)
+    m.generation = 3
+    m.save = { get = function(_, k) return store[k] end, set = function(_, k, v) store[k] = v end }
+    m.world = { party = function() return party end }
+  end
+  local recs = { TORCHIC = { types = { "FIRE" } }, TREECKO = { types = { "GRASS" } }, ZIGZAGOON = { types = { "NORMAL" } } }
+  local _, _, ev = load({}, recs, setup)
+  local start = ev["battle.started"].fn
+  local torchic = { species = "TORCHIC", name = "TORCHIC", nickname = "TORCHIC", level = 5 }
+  party[1] = torchic
+  start({ kind = "wild" })
+  check(torchic.nickname ~= "TORCHIC" and #torchic.nickname > 0, "the RSE starter gets a name: " .. tostring(torchic.nickname))
+  local first = torchic.nickname
+  -- the battle writes its copy back over the party
+  torchic.nickname = ""
+  ev["battle.ended"].fn({ kind = "wild" })
+  check(torchic.nickname == first, "the name goes back on after the first battle")
+  torchic.nickname = "TORCHIC"
+  ev["battle.ended"].fn({ kind = "wild" })
+  check(torchic.nickname == "TORCHIC", "but only after the first battle")
+  start({ kind = "wild" })
+  check(torchic.nickname == "TORCHIC", "only once per save")
+  store = {}
+  local mine = { species = "TREECKO", name = "TREECKO", nickname = "WOODY", level = 5 }
+  party = { mine }
+  start({ kind = "wild" })
+  check(mine.nickname == "WOODY", "a name the player gave is kept")
+  store = {}
+  local later = { species = "TORCHIC", name = "TORCHIC", nickname = "TORCHIC", level = 9 }
+  party = { later }
+  start({ kind = "wild" })
+  check(later.nickname == "TORCHIC", "an older save's starter past level 5 is left alone")
+  store = {}
+  local two = { species = "TORCHIC", name = "TORCHIC", nickname = "TORCHIC", level = 5 }
+  party = { two, { species = "ZIGZAGOON", level = 3 } }
+  start({ kind = "wild" })
+  check(two.nickname == "TORCHIC", "only when the starter is the whole party")
+  local _, _, ev1 = load({}, recs, function(m) setup(m); m.generation = 1 end)
+  store = {}
+  local g1 = { species = "TORCHIC", name = "TORCHIC", nickname = "TORCHIC", level = 5 }
+  party = { g1 }
+  ev1["battle.started"].fn({ kind = "wild" })
+  check(g1.nickname == "TORCHIC", "Gen 1 and Gen 2 leave it to GIFTS")
+end
+
 print(("%d passed, %d failed"):format(passes, failures))
 os.exit(failures == 0 and 0 or 1)

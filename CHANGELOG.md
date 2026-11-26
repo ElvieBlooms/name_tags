@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.1
+
+- The starter from Birch's bag in Ruby, Sapphire and Emerald gets a name, as the first battle ends. Those games never ask, and the engine hands the starter over without the gift event other gifts use.
+- **REROLL** and **RENAME** show while you have only one Pokémon. Gen 3 leaves SWITCH out then, so the rows go above ITEM. They never show for an egg.
+- Bakery Run and Six of a Kind can unlock in the Gen 3 games: the party check couldn't see a Gen 3 party before.
+
 ## 1.4.0
 
 Four new sets, from a list of Nuzlocke nickname themes.
